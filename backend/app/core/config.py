@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     MAX_FILE_SIZE_MB: int = 10
     ALLOWED_EXTENSIONS: set[str] = {"jpg", "jpeg", "png", "pdf"}
 
+    # Supabase
+    SUPABASE_URL: str = ""
+    SUPABASE_KEY: str = ""
+
     # Security
     SECRET_KEY: str = "change-me-in-production"
 

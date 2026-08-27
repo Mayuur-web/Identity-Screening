@@ -2,6 +2,7 @@
 
 import logging
 import os
+from typing import Optional
 
 from fastapi import APIRouter, File, Form, UploadFile, HTTPException
 
@@ -17,6 +18,7 @@ from app.schemas.document import (
     DocumentStatus,
 )
 from app.services import ocr_service
+from app.services.database_service import save_verification_record
 from app.services.field_extraction_service import (
     extract_fields,
     extract_passport_fields,
@@ -26,6 +28,7 @@ from app.services.mrz_service import (
     extract_mrz_from_image,
 )
 from app.services.verification_service import verify_document
+from app.services.face_verification_service import verify_faces
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +73,6 @@ async def upload_document(
         )
 
     doc_id = generate_id(prefix="DOC")
-
     original_name = safe_filename(file.filename)
     stored_filename = f"{doc_id}_{original_name}"
 
@@ -131,7 +133,6 @@ async def run_ocr(file: UploadFile = File(...)):
         )
 
     doc_id = generate_id(prefix="OCR")
-
     original_name = safe_filename(file.filename)
     stored_filename = f"{doc_id}_{original_name}"
 
@@ -168,7 +169,6 @@ async def run_ocr(file: UploadFile = File(...)):
         }
 
     finally:
-        # Always remove temporary OCR upload
         try:
             os.remove(upload_path)
         except OSError:
@@ -188,13 +188,7 @@ async def analyze_document(
 
     Passport:
         OCR → MRZ image extraction → passport field extraction
-
-    The uploaded image is kept until ALL processing is complete.
     """
-
-    # ---------------------------------------------------------
-    # 1. Validate file
-    # ---------------------------------------------------------
 
     if not file.filename:
         raise HTTPException(
@@ -226,12 +220,7 @@ async def analyze_document(
             ),
         )
 
-    # ---------------------------------------------------------
-    # 2. Save image
-    # ---------------------------------------------------------
-
     doc_id = generate_id(prefix="DOC")
-
     original_name = safe_filename(file.filename)
     stored_filename = f"{doc_id}_{original_name}"
 
@@ -244,10 +233,6 @@ async def analyze_document(
         f.write(content)
 
     try:
-        # -----------------------------------------------------
-        # 3. Run OCR
-        # -----------------------------------------------------
-
         doc_type = (
             document_type
             if document_type != "other"
@@ -275,27 +260,18 @@ async def analyze_document(
                 ),
             )
 
-        # -----------------------------------------------------
-        # 4. Document-type-specific processing
-        # -----------------------------------------------------
-
         mrz_data = None
 
         if doc_type == "passport":
-
             logger.info(
                 "Running passport MRZ extraction for %s",
                 doc_id,
             )
 
-            # IMPORTANT:
-            # The image still exists here.
-            # extract_mrz_from_image() needs the actual image.
             mrz_data = extract_mrz_from_image(
                 upload_path
             )
 
-            # Fallback to MRZ detection from OCR lines
             if not mrz_data.get("detected"):
                 logger.info(
                     "Image MRZ extraction failed; "
@@ -311,32 +287,17 @@ async def analyze_document(
                 mrz_data.get("detected", False),
             )
 
-            # Passport-specific extraction
             fields = extract_passport_fields(
                 ocr_lines=ocr_result["lines"],
                 mrz_data=mrz_data,
             )
 
         else:
-
-            # -------------------------------------------------
-            # Aadhaar / other documents
-            # -------------------------------------------------
-
-            logger.info(
-                "Running generic field extraction for %s",
-                doc_id,
-            )
-
             fields = extract_fields(
                 ocr_lines=ocr_result["lines"],
                 document_type=doc_type,
                 mrz_data=None,
             )
-
-        # -----------------------------------------------------
-        # 5. Build response
-        # -----------------------------------------------------
 
         response = {
             "success": True,
@@ -376,14 +337,6 @@ async def analyze_document(
         return response
 
     finally:
-        # -----------------------------------------------------
-        # 6. Cleanup AFTER all processing
-        # -----------------------------------------------------
-        #
-        # This is intentionally at the end.
-        # Passport MRZ extraction must have access to the
-        # original image before it is deleted.
-        #
         try:
             if os.path.exists(upload_path):
                 os.remove(upload_path)
@@ -405,16 +358,14 @@ async def analyze_document(
 async def verify_document_endpoint(
     file: UploadFile = File(...),
     document_type: str = Form(default="other"),
+    selfie: Optional[UploadFile] = File(default=None),
 ):
     """
-    Run OCR + field extraction + verification in one step.
+    Run OCR + field extraction + verification.
 
-    Returns verification status, score, and detailed checks.
+    Optionally accepts a selfie for face verification.
+    Also saves the verification result to Supabase.
     """
-
-    # ---------------------------------------------------------
-    # 1. Validate file
-    # ---------------------------------------------------------
 
     if not file.filename:
         raise HTTPException(
@@ -435,8 +386,7 @@ async def verify_document_endpoint(
     content = await file.read()
 
     if not validate_file_size(
-        len(content),
-        settings.MAX_FILE_SIZE_MB,
+        len(content), settings.MAX_FILE_SIZE_MB,
     ):
         raise HTTPException(
             status_code=400,
@@ -446,26 +396,35 @@ async def verify_document_endpoint(
             ),
         )
 
-    # ---------------------------------------------------------
-    # 2. Save image
-    # ---------------------------------------------------------
-
     doc_id = generate_id(prefix="DOC")
     original_name = safe_filename(file.filename)
     stored_filename = f"{doc_id}_{original_name}"
+
     upload_path = os.path.join(
         settings.UPLOAD_DIR,
         stored_filename,
     )
 
+    # Save selfie temporarily if provided
+    selfie_path = None
+
+    if selfie and selfie.filename:
+        selfie_content = await selfie.read()
+        if selfie_content and validate_file_size(
+            len(selfie_content), settings.MAX_FILE_SIZE_MB,
+        ):
+            selfie_ext = os.path.splitext(selfie.filename)[1] or ".png"
+            selfie_filename = f"{doc_id}_selfie{selfie_ext}"
+            selfie_path = os.path.join(
+                settings.UPLOAD_DIR, selfie_filename,
+            )
+            with open(selfie_path, "wb") as sf:
+                sf.write(selfie_content)
+
     with open(upload_path, "wb") as f:
         f.write(content)
 
     try:
-        # -----------------------------------------------------
-        # 3. Run OCR
-        # -----------------------------------------------------
-
         doc_type = (
             document_type
             if document_type != "other"
@@ -479,6 +438,7 @@ async def verify_document_endpoint(
             original_name,
         )
 
+        # OCR
         ocr_result = await ocr_service.extract_text(
             image_path=upload_path,
             document_type=doc_type,
@@ -493,24 +453,24 @@ async def verify_document_endpoint(
                 ),
             )
 
-        # -----------------------------------------------------
-        # 4. Document-type-specific extraction
-        # -----------------------------------------------------
-
+        # Field extraction
         mrz_data = None
 
         if doc_type == "passport":
             mrz_data = extract_mrz_from_image(
                 upload_path
             )
+
             if not mrz_data.get("detected"):
                 mrz_data = detect_mrz(
                     ocr_result["lines"]
                 )
+
             fields = extract_passport_fields(
                 ocr_lines=ocr_result["lines"],
                 mrz_data=mrz_data,
             )
+
         else:
             fields = extract_fields(
                 ocr_lines=ocr_result["lines"],
@@ -518,15 +478,14 @@ async def verify_document_endpoint(
                 mrz_data=None,
             )
 
-        # -----------------------------------------------------
-        # 5. Run verification engine
-        # -----------------------------------------------------
-
+        # Verification
         ocr_meta = {
             "average_confidence": ocr_result.get(
                 "average_confidence"
             ),
-            "lines_count": len(ocr_result.get("lines", [])),
+            "lines_count": len(
+                ocr_result.get("lines", [])
+            ),
         }
 
         verification = verify_document(
@@ -536,10 +495,87 @@ async def verify_document_endpoint(
             document_type=doc_type,
         )
 
-        # -----------------------------------------------------
-        # 6. Build response
-        # -----------------------------------------------------
+        # --- Face verification (optional) ---
+        face_verification = {
+            "status": "NOT_PROVIDED",
+            "similarity_score": None,
+            "face_detected_in_document": False,
+            "face_detected_in_selfie": False,
+            "message": "Selfie not provided",
+        }
+        face_check_status = "not_checked"
+        face_check_message = "Selfie not provided"
 
+        if selfie_path and os.path.isfile(selfie_path):
+            logger.info(
+                "Running face verification for %s",
+                doc_id,
+            )
+            fv = verify_faces(
+                document_image_path=upload_path,
+                selfie_image_path=selfie_path,
+            )
+            face_verification = {
+                "status": fv["status"],
+                "similarity_score": fv["similarity_score"],
+                "face_detected_in_document": fv["face_detected_in_document"],
+                "face_detected_in_selfie": fv["face_detected_in_selfie"],
+                "message": fv["message"],
+            }
+
+            if fv["status"] == "MATCH":
+                face_check_status = "passed"
+                face_check_message = (
+                    f"Faces match ({fv['similarity_score']}%)"
+                )
+            elif fv["status"] == "NO_MATCH":
+                face_check_status = "failed"
+                face_check_message = (
+                    f"Faces do not match ({fv['similarity_score']}%)"
+                )
+            elif fv["status"] == "NO_FACE":
+                face_check_status = "failed"
+                face_check_message = fv["message"]
+            else:
+                # ERROR or other
+                face_check_status = "failed"
+                face_check_message = fv["message"]
+
+            logger.info(
+                "Face verification result: status=%s score=%s",
+                fv["status"],
+                fv["similarity_score"],
+            )
+
+        # Add face check to verification checks
+        face_check = {
+            "name": "Face Match",
+            "status": face_check_status,
+            "message": face_check_message,
+        }
+        verification["checks"].append(face_check)
+
+        # Save verification result to Supabase
+        logger.info(
+            "Calling save_verification_record for %s",
+            doc_id,
+        )
+        saved = save_verification_record(
+            document_id=doc_id,
+            document_type=doc_type,
+            filename=original_name,
+            verification_result=verification,
+            extracted_fields=fields,
+        )
+        if saved:
+            logger.info("Record saved successfully: %s", doc_id)
+        else:
+            logger.warning(
+                "Record NOT saved (Supabase unavailable or insert failed): %s",
+                doc_id,
+            )
+
+        # Response
         response = {
             "success": True,
             "document_id": doc_id,
@@ -550,6 +586,7 @@ async def verify_document_endpoint(
             "reasons": verification["reasons"],
             "fields": fields,
             "mrz": mrz_data,
+            "face_verification": face_verification,
             "ocr": {
                 "full_text": ocr_result["full_text"],
                 "average_confidence": (
@@ -573,8 +610,14 @@ async def verify_document_endpoint(
         return response
 
     finally:
-        try:
-            if os.path.exists(upload_path):
-                os.remove(upload_path)
-        except OSError:
-            pass
+        # Clean up temporary files
+        for path in (upload_path, selfie_path):
+            if path:
+                try:
+                    if os.path.exists(path):
+                        os.remove(path)
+                except OSError as exc:
+                    logger.warning(
+                        "Could not remove temporary file %s: %s",
+                        path, exc,
+                    )

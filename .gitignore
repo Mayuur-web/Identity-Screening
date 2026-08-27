@@ -220,3 +220,6 @@ __marimo__/
 # Backend uploads (user-uploaded files)
 backend/uploads/*
 !backend/uploads/.gitkeep
+
+#Environment variables
+.env
