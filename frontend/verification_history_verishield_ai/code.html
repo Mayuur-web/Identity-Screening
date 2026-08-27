@@ -1,0 +1,377 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Verification History - Parakh Seva</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {outline: "#74777e", "on-secondary": "#ffffff", "on-secondary-fixed": "#0f0069", "on-tertiary-fixed-variant": "#59422c", "tertiary-fixed": "#ffdcbd", "on-tertiary": "#ffffff", tertiary: "#1a0b00", "on-primary-container": "#7c8ca4", "on-tertiary-fixed": "#291805", "surface-container-low": "#f0f3ff", "surface-container-highest": "#d8e3fb", "on-surface-variant": "#43474d", primary: "#000f22", "primary-container": "#152539", "on-secondary-container": "#fffbff", "tertiary-container": "#33200c", "error-container": "#ffdad6", "surface-variant": "#d8e3fb", "surface-dim": "#cfdaf2", "on-primary-fixed-variant": "#38485d", "surface-tint": "#505f76", "on-primary-fixed": "#0b1c30", background: "#f9f9ff", "on-primary": "#ffffff", "inverse-surface": "#263143", "secondary-fixed": "#e2dfff", "surface-container": "#e7eeff", "inverse-on-surface": "#ecf1ff", error: "#ba1a1a", "secondary-container": "#645cff", "on-tertiary-container": "#a3866b", "on-secondary-fixed-variant": "#331dd2", "primary-fixed": "#d3e4fe", "tertiary-fixed-dim": "#e1c1a3", "inverse-primary": "#b7c8e1", "outline-variant": "#c4c6ce", secondary: "#4a3ee6", "secondary-fixed-dim": "#c3c0ff", "surface-bright": "#f9f9ff", "surface-container-lowest": "#ffffff", "on-error": "#ffffff", surface: "#f9f9ff", "on-error-container": "#93000a", "surface-container-high": "#dee8ff", "on-surface": "#111c2d", "on-background": "#111c2d", "primary-fixed-dim": "#b7c8e1"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {unit: "4px", "stack-gap-lg": "24px", gutter: "16px", "stack-gap-md": "16px", "container-padding": "24px", "stack-gap-sm": "8px"}, fontFamily: {"label-md": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"], "body-md": ["Inter"], "display-lg": ["Inter"], "headline-sm": ["Inter"], "data-mono": ["Inter"]}, fontSize: {"label-md": ["12px", {lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600"}], "body-lg": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-md": ["24px", {lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-md": ["14px", {lineHeight: "20px", fontWeight: "400"}], "display-lg": ["36px", {lineHeight: "44px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-sm": ["20px", {lineHeight: "28px", fontWeight: "600"}], "data-mono": ["13px", {lineHeight: "18px", letterSpacing: "0", fontWeight: "500"}]}}}};</script>
+</head>
+<body class="bg-background text-on-background antialiased font-body-md h-screen flex overflow-hidden selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- SideNavBar (Shared Component) -->
+<nav class="bg-surface-container-lowest dark:bg-primary-container text-primary dark:text-primary-fixed font-label-md text-label-md fixed left-0 top-0 h-full w-64 border-r border-outline-variant dark:border-outline hidden md:flex flex-col p-gutter z-20">
+<div class="mb-8 px-4 mt-2">
+<span class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed-dim">Parakh Seva</span>
+<div class="text-on-surface-variant font-label-md text-label-md mt-1">Identity Platform</div>
+</div>
+<div class="flex-1 overflow-y-auto space-y-2 pr-2">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-surface-container-high dark:hover:bg-primary transition-all duration-200 ease-in-out active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-surface-container-high dark:hover:bg-primary transition-all duration-200 ease-in-out active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="add_moderator">add_moderator</span>
+                New Verification
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg font-bold hover:bg-surface-container-high dark:hover:bg-primary transition-all duration-200 ease-in-out active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="history" style="font-variation-settings: 'FILL' 1;">history</span>
+                Verification History
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-surface-container-high dark:hover:bg-primary transition-all duration-200 ease-in-out active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+                Document Analysis
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-surface-container-high dark:hover:bg-primary transition-all duration-200 ease-in-out active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="face">face</span>
+                Identity Matching
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-surface-container-high dark:hover:bg-primary transition-all duration-200 ease-in-out active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+                Risk Reports
+            </a>
+</div>
+<div class="pt-4 border-t border-outline-variant dark:border-outline mt-auto">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors hover:bg-surface-container-high dark:hover:bg-primary transition-all duration-200 ease-in-out active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 ml-0 md:ml-64 flex flex-col min-w-0 h-full">
+<!-- TopNavBar (Shared Component) -->
+<header class="bg-surface dark:bg-primary text-primary dark:text-primary-fixed font-body-md text-body-md fixed top-0 right-0 w-full md:w-[calc(100%-16rem)] h-16 border-b border-outline-variant dark:border-outline flex justify-between items-center px-container-padding z-10 transition-opacity duration-150 hover:opacity-80">
+<div class="flex items-center gap-4">
+<!-- Mobile Menu Trigger -->
+<button class="md:hidden p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="hidden font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed-dim">Parakh Seva</span>
+</div>
+<div class="flex-1 flex justify-end items-center gap-6">
+<!-- Navigation Links (Only visible if searching is not taking full width) -->
+<nav class="hidden lg:flex items-center gap-6">
+<a class="text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim cursor-pointer" href="#">System Status</a>
+</nav>
+<!-- Actions -->
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-high">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-primary overflow-hidden border border-outline-variant" title="Verifier Profile">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 overflow-y-auto pt-16 px-container-padding pb-container-padding bg-surface">
+<!-- Page Header -->
+<div class="py-stack-gap-lg flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+<div>
+<h1 class="font-headline-md text-headline-md text-on-surface mb-1">Verification History</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Review and manage past identity verification records.</p>
+</div>
+<div class="flex gap-3">
+<button class="bg-surface-container-lowest border border-outline-variant text-primary font-label-md text-label-md px-4 py-2 rounded flex items-center gap-2 hover:bg-surface-container-high transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                        Export
+                    </button>
+</div>
+</div>
+<!-- Filters Section -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-gap-md mb-stack-gap-lg shadow-sm">
+<!-- Search & Advanced Filters -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-stack-gap-md mb-stack-gap-md">
+<div class="md:col-span-5 relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-background border border-outline-variant rounded-lg text-body-md font-body-md text-on-surface placeholder-outline focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-shadow" placeholder="Search by ID, Applicant Name, or Email..." type="text">
+</div>
+<div class="md:col-span-2 relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">calendar_today</span>
+<select class="w-full pl-9 pr-4 py-2 bg-background border border-outline-variant rounded-lg text-body-md font-body-md text-on-surface appearance-none focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary cursor-pointer">
+<option>Last 30 Days</option>
+<option>Last 7 Days</option>
+<option>Last 24 Hours</option>
+<option>Custom Range...</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+<div class="md:col-span-2 relative">
+<select class="w-full pl-3 pr-8 py-2 bg-background border border-outline-variant rounded-lg text-body-md font-body-md text-on-surface appearance-none focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary cursor-pointer">
+<option>Any Doc Type</option>
+<option>Passport</option>
+<option>Driver's License</option>
+<option>National ID</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+<div class="md:col-span-2 relative">
+<select class="w-full pl-3 pr-8 py-2 bg-background border border-outline-variant rounded-lg text-body-md font-body-md text-on-surface appearance-none focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary cursor-pointer">
+<option>Any Risk Level</option>
+<option>Low Risk</option>
+<option>Medium Risk</option>
+<option>High Risk</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+<div class="md:col-span-1 flex justify-end">
+<button class="w-full md:w-auto bg-surface-container-highest text-primary p-2 rounded-lg border border-outline-variant hover:bg-surface-container-high transition-colors flex items-center justify-center" title="More Filters">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Quick Filter Chips -->
+<div class="flex flex-wrap gap-2 pt-3 border-t border-outline-variant border-opacity-50">
+<button class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-md text-label-md border border-secondary transition-colors">
+                        All Records
+                    </button>
+<button class="px-3 py-1 rounded-full bg-background text-on-surface-variant font-label-md text-label-md border border-outline-variant hover:bg-surface-container-high transition-colors flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#10b981]"></span> Verified
+                    </button>
+<button class="px-3 py-1 rounded-full bg-background text-on-surface-variant font-label-md text-label-md border border-outline-variant hover:bg-surface-container-high transition-colors flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#f59e0b]"></span> Suspicious
+                    </button>
+<button class="px-3 py-1 rounded-full bg-background text-on-surface-variant font-label-md text-label-md border border-outline-variant hover:bg-surface-container-high transition-colors flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#ef4444]"></span> High Risk
+                    </button>
+<button class="px-3 py-1 rounded-full bg-background text-on-surface-variant font-label-md text-label-md border border-outline-variant hover:bg-surface-container-high transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">psychology</span> Manual Review
+                    </button>
+</div>
+</div>
+<!-- Data Table Container -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[900px]">
+<thead>
+<tr class="bg-[#F8FAFC] border-b border-outline-variant font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">
+<th class="px-4 py-3 font-semibold">ID</th>
+<th class="px-4 py-3 font-semibold">Applicant</th>
+<th class="px-4 py-3 font-semibold">Document</th>
+<th class="px-4 py-3 font-semibold">Date &amp; Time</th>
+<th class="px-4 py-3 font-semibold text-center">Risk Score</th>
+<th class="px-4 py-3 font-semibold text-center">Face Match</th>
+<th class="px-4 py-3 font-semibold">Status</th>
+<th class="px-4 py-3 font-semibold text-right">Action</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface divide-y divide-outline-variant divide-opacity-40">
+<!-- Row 1: Verified -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-default">
+<td class="px-4 py-2 font-data-mono text-data-mono text-outline">V-99382</td>
+<td class="px-4 py-2">
+<div class="font-medium">Sarah Jenkins</div>
+<div class="text-[12px] text-on-surface-variant">s.jenkins@example.com</div>
+</td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[18px]">badge</span>
+<span>US Passport</span>
+</div>
+</td>
+<td class="px-4 py-2 text-on-surface-variant text-[13px]">
+                                    Oct 24, 2023<br>14:32:01 UTC
+                                </td>
+<td class="px-4 py-2 text-center">
+<div class="inline-flex items-center gap-1 bg-[#f0fdf4] text-[#166534] px-2 py-0.5 rounded font-data-mono text-data-mono font-bold">
+                                        12
+                                    </div>
+</td>
+<td class="px-4 py-2 text-center">
+<span class="text-[#10b981] font-data-mono text-data-mono font-medium">98.2%</span>
+</td>
+<td class="px-4 py-2">
+<span class="bg-[#dcfce7] text-[#166534] font-label-md text-label-md px-2 py-1 rounded uppercase tracking-wider">Verified</span>
+</td>
+<td class="px-4 py-2 text-right">
+<button class="text-secondary hover:text-on-secondary-fixed-variant font-medium text-[13px] opacity-0 group-hover:opacity-100 transition-opacity">View Report</button>
+</td>
+</tr>
+<!-- Row 2: Suspicious -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-default">
+<td class="px-4 py-2 font-data-mono text-data-mono text-outline">V-99381</td>
+<td class="px-4 py-2">
+<div class="font-medium">Michael Chen</div>
+<div class="text-[12px] text-on-surface-variant">mchen88@domain.net</div>
+</td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[18px]">directions_car</span>
+<span>CA Driver's License</span>
+</div>
+</td>
+<td class="px-4 py-2 text-on-surface-variant text-[13px]">
+                                    Oct 24, 2023<br>14:28:44 UTC
+                                </td>
+<td class="px-4 py-2 text-center">
+<div class="inline-flex items-center gap-1 bg-[#fffbeb] text-[#b45309] px-2 py-0.5 rounded font-data-mono text-data-mono font-bold">
+                                        68
+                                    </div>
+</td>
+<td class="px-4 py-2 text-center">
+<span class="text-[#f59e0b] font-data-mono text-data-mono font-medium">72.4%</span>
+</td>
+<td class="px-4 py-2">
+<span class="bg-[#fef3c7] text-[#92400e] font-label-md text-label-md px-2 py-1 rounded uppercase tracking-wider">Flagged</span>
+</td>
+<td class="px-4 py-2 text-right">
+<button class="text-secondary hover:text-on-secondary-fixed-variant font-medium text-[13px] opacity-0 group-hover:opacity-100 transition-opacity">View Report</button>
+</td>
+</tr>
+<!-- Row 3: High Risk -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-default bg-error-container bg-opacity-10">
+<td class="px-4 py-2 font-data-mono text-data-mono text-outline">V-99380</td>
+<td class="px-4 py-2">
+<div class="font-medium text-error">Unknown Entity</div>
+<div class="text-[12px] text-on-surface-variant">temp_9182@anon.co</div>
+</td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[18px]">credit_card</span>
+<span>UK National ID</span>
+</div>
+</td>
+<td class="px-4 py-2 text-on-surface-variant text-[13px]">
+                                    Oct 24, 2023<br>14:15:12 UTC
+                                </td>
+<td class="px-4 py-2 text-center">
+<div class="inline-flex items-center gap-1 bg-[#fef2f2] text-[#991b1b] px-2 py-0.5 rounded border border-[#fca5a5] font-data-mono text-data-mono font-bold">
+                                        94
+                                    </div>
+</td>
+<td class="px-4 py-2 text-center">
+<span class="text-[#ef4444] font-data-mono text-data-mono font-medium">41.0%</span>
+</td>
+<td class="px-4 py-2">
+<span class="bg-[#fee2e2] text-[#991b1b] font-label-md text-label-md px-2 py-1 rounded uppercase tracking-wider">Rejected</span>
+</td>
+<td class="px-4 py-2 text-right">
+<button class="text-secondary hover:text-on-secondary-fixed-variant font-medium text-[13px] opacity-100 transition-opacity">Investigate</button>
+</td>
+</tr>
+<!-- Row 4: Verified -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-default">
+<td class="px-4 py-2 font-data-mono text-data-mono text-outline">V-99379</td>
+<td class="px-4 py-2">
+<div class="font-medium">Elena Rodriguez</div>
+<div class="text-[12px] text-on-surface-variant">erod@company.io</div>
+</td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[18px]">badge</span>
+<span>ES Passport</span>
+</div>
+</td>
+<td class="px-4 py-2 text-on-surface-variant text-[13px]">
+                                    Oct 24, 2023<br>13:55:09 UTC
+                                </td>
+<td class="px-4 py-2 text-center">
+<div class="inline-flex items-center gap-1 bg-[#f0fdf4] text-[#166534] px-2 py-0.5 rounded font-data-mono text-data-mono font-bold">
+                                        08
+                                    </div>
+</td>
+<td class="px-4 py-2 text-center">
+<span class="text-[#10b981] font-data-mono text-data-mono font-medium">99.1%</span>
+</td>
+<td class="px-4 py-2">
+<span class="bg-[#dcfce7] text-[#166534] font-label-md text-label-md px-2 py-1 rounded uppercase tracking-wider">Verified</span>
+</td>
+<td class="px-4 py-2 text-right">
+<button class="text-secondary hover:text-on-secondary-fixed-variant font-medium text-[13px] opacity-0 group-hover:opacity-100 transition-opacity">View Report</button>
+</td>
+</tr>
+<!-- Row 5: Manual Review -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-default">
+<td class="px-4 py-2 font-data-mono text-data-mono text-outline">V-99378</td>
+<td class="px-4 py-2">
+<div class="font-medium">David Kim</div>
+<div class="text-[12px] text-on-surface-variant">dkim_design@mail.com</div>
+</td>
+<td class="px-4 py-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[18px]">directions_car</span>
+<span>NY Driver's License</span>
+</div>
+</td>
+<td class="px-4 py-2 text-on-surface-variant text-[13px]">
+                                    Oct 24, 2023<br>13:12:33 UTC
+                                </td>
+<td class="px-4 py-2 text-center">
+<div class="inline-flex items-center gap-1 bg-[#f1f5f9] text-[#334155] px-2 py-0.5 rounded font-data-mono text-data-mono font-bold border border-outline-variant">
+                                        --
+                                    </div>
+</td>
+<td class="px-4 py-2 text-center">
+<span class="text-on-surface-variant font-data-mono text-data-mono font-medium">Pending</span>
+</td>
+<td class="px-4 py-2">
+<span class="bg-surface-container-highest text-primary font-label-md text-label-md px-2 py-1 rounded uppercase tracking-wider border border-outline-variant flex items-center gap-1 w-max">
+<span class="material-symbols-outlined text-[14px]">psychology</span> Review
+                                    </span>
+</td>
+<td class="px-4 py-2 text-right">
+<button class="text-secondary hover:text-on-secondary-fixed-variant font-medium text-[13px] opacity-100 transition-opacity">Start Review</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="bg-surface border-t border-outline-variant px-4 py-3 flex items-center justify-between sm:px-6">
+<div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+<div>
+<p class="text-sm text-on-surface-variant font-body-md text-body-md">
+                                Showing
+                                <span class="font-medium text-on-surface">1</span>
+                                to
+                                <span class="font-medium text-on-surface">10</span>
+                                of
+                                <span class="font-medium text-on-surface">2,486</span>
+                                records
+                            </p>
+</div>
+<div>
+<nav aria-label="Pagination" class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+<a class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-outline-variant bg-surface-container-lowest text-sm font-medium text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="sr-only">Previous</span>
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</a>
+<a aria-current="page" class="z-10 bg-surface-container-highest border-secondary text-primary relative inline-flex items-center px-4 py-2 border text-sm font-medium" href="#">
+                                    1
+                                </a>
+<a class="bg-surface-container-lowest border-outline-variant text-on-surface-variant hover:bg-surface-container-high relative inline-flex items-center px-4 py-2 border text-sm font-medium transition-colors" href="#">
+                                    2
+                                </a>
+<a class="bg-surface-container-lowest border-outline-variant text-on-surface-variant hover:bg-surface-container-high relative inline-flex items-center px-4 py-2 border text-sm font-medium transition-colors" href="#">
+                                    3
+                                </a>
+<span class="relative inline-flex items-center px-4 py-2 border border-outline-variant bg-surface-container-lowest text-sm font-medium text-on-surface-variant">
+                                    ...
+                                </span>
+<a class="bg-surface-container-lowest border-outline-variant text-on-surface-variant hover:bg-surface-container-high relative inline-flex items-center px-4 py-2 border text-sm font-medium transition-colors" href="#">
+                                    249
+                                </a>
+<a class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-outline-variant bg-surface-container-lowest text-sm font-medium text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="sr-only">Next</span>
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</a>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

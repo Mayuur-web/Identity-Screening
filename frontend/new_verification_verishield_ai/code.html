@@ -1,0 +1,213 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>New Identity Verification - Parakh Seva</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {outline: "#74777e", "on-secondary": "#ffffff", "on-secondary-fixed": "#0f0069", "on-tertiary-fixed-variant": "#59422c", "tertiary-fixed": "#ffdcbd", "on-tertiary": "#ffffff", tertiary: "#1a0b00", "on-primary-container": "#7c8ca4", "on-tertiary-fixed": "#291805", "surface-container-low": "#f0f3ff", "surface-container-highest": "#d8e3fb", "on-surface-variant": "#43474d", primary: "#000f22", "primary-container": "#152539", "on-secondary-container": "#fffbff", "tertiary-container": "#33200c", "error-container": "#ffdad6", "surface-variant": "#d8e3fb", "surface-dim": "#cfdaf2", "on-primary-fixed-variant": "#38485d", "surface-tint": "#505f76", "on-primary-fixed": "#0b1c30", background: "#f9f9ff", "on-primary": "#ffffff", "inverse-surface": "#263143", "secondary-fixed": "#e2dfff", "surface-container": "#e7eeff", "inverse-on-surface": "#ecf1ff", error: "#ba1a1a", "secondary-container": "#645cff", "on-tertiary-container": "#a3866b", "on-secondary-fixed-variant": "#331dd2", "primary-fixed": "#d3e4fe", "tertiary-fixed-dim": "#e1c1a3", "inverse-primary": "#b7c8e1", "outline-variant": "#c4c6ce", secondary: "#4a3ee6", "secondary-fixed-dim": "#c3c0ff", "surface-bright": "#f9f9ff", "surface-container-lowest": "#ffffff", "on-error": "#ffffff", surface: "#f9f9ff", "on-error-container": "#93000a", "surface-container-high": "#dee8ff", "on-surface": "#111c2d", "on-background": "#111c2d", "primary-fixed-dim": "#b7c8e1"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {unit: "4px", "stack-gap-lg": "24px", gutter: "16px", "stack-gap-md": "16px", "container-padding": "24px", "stack-gap-sm": "8px"}, fontFamily: {"label-md": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"], "body-md": ["Inter"], "display-lg": ["Inter"], "headline-sm": ["Inter"], "data-mono": ["Inter"]}, fontSize: {"label-md": ["12px", {lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600"}], "body-lg": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-md": ["24px", {lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-md": ["14px", {lineHeight: "20px", fontWeight: "400"}], "display-lg": ["36px", {lineHeight: "44px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-sm": ["20px", {lineHeight: "28px", fontWeight: "600"}], "data-mono": ["13px", {lineHeight: "18px", letterSpacing: "0", fontWeight: "500"}]}}}};</script>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Custom Stepper Line Background */
+        .stepper-line::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background-color: #c4c6ce; /* outline-variant */
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen">
+<!-- SideNavBar -->
+<aside class="bg-surface-container-lowest dark:bg-primary-container text-primary dark:text-primary-fixed font-label-md text-label-md fixed left-0 top-0 h-full w-64 border-r border-outline-variant dark:border-outline flex flex-col p-gutter z-20">
+<div class="mb-8 px-4 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim" style="font-variation-settings: 'FILL' 1;">shield</span>
+<div class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed-dim flex flex-col">
+<span>Parakh Seva</span>
+<span class="text-label-md text-on-surface-variant font-normal">Identity Platform</span>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors transition-all duration-200 ease-in-out active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg font-bold transition-all duration-200 ease-in-out active:scale-95" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_moderator</span>
+                New Verification
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors transition-all duration-200 ease-in-out active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined">history</span>
+                Verification History
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors transition-all duration-200 ease-in-out active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined">description</span>
+                Document Analysis
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors transition-all duration-200 ease-in-out active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined">face</span>
+                Identity Matching
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors transition-all duration-200 ease-in-out active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined">assessment</span>
+                Risk Reports
+            </a>
+</nav>
+<div class="mt-auto">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors transition-all duration-200 ease-in-out active:scale-95 rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+</div>
+</aside>
+<!-- TopNavBar -->
+<nav class="bg-surface dark:bg-primary text-primary dark:text-primary-fixed font-body-md text-body-md fixed top-0 right-0 w-[calc(100%-16rem)] h-16 border-b border-outline-variant dark:border-outline flex justify-between items-center px-container-padding z-10 transition-opacity duration-150 hover:opacity-100">
+<!-- Left Side / Brand (Hidden per JSON, but we can put breadcrumbs or empty space) -->
+<div class="hidden font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed-dim">
+            Parakh Seva
+        </div>
+<div class="flex-1 flex justify-end gap-6 items-center">
+<a class="text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim cursor-pointer font-label-md flex items-center gap-2" href="#">
+<span class="w-2 h-2 rounded-full bg-green-500 block"></span>
+                System Status
+            </a>
+<div class="h-6 w-px bg-outline-variant"></div>
+<button class="text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim cursor-pointer transition-opacity duration-150 hover:opacity-80 flex items-center justify-center">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button aria-label="Verifier Profile" class="text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim cursor-pointer transition-opacity duration-150 hover:opacity-80 flex items-center justify-center">
+<span class="material-symbols-outlined text-[32px]">account_circle</span>
+</button>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="ml-64 pt-16 min-h-screen">
+<div class="max-w-5xl mx-auto p-container-padding">
+<!-- Page Header -->
+<header class="mb-stack-gap-lg">
+<h1 class="font-display-lg text-display-lg text-on-surface mb-2 tracking-tight">New Identity Verification</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">Upload official documents and biometric data to initiate a high-assurance identity analysis workflow.</p>
+</header>
+<!-- Workflow Stepper -->
+<div class="relative mb-12 stepper-line">
+<div class="flex justify-between relative z-10">
+<!-- Step 1: Active -->
+<div class="flex flex-col items-center gap-2 w-1/4">
+<div class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-[0_0_0_4px_#f9f9ff]">
+<span class="material-symbols-outlined">upload_file</span>
+</div>
+<span class="font-label-md text-label-md text-primary">Upload</span>
+</div>
+<!-- Step 2: Inactive -->
+<div class="flex flex-col items-center gap-2 w-1/4">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center border border-outline-variant shadow-[0_0_0_4px_#f9f9ff]">
+<span class="material-symbols-outlined">document_scanner</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Extract</span>
+</div>
+<!-- Step 3: Inactive -->
+<div class="flex flex-col items-center gap-2 w-1/4">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center border border-outline-variant shadow-[0_0_0_4px_#f9f9ff]">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Analyze</span>
+</div>
+<!-- Step 4: Inactive -->
+<div class="flex flex-col items-center gap-2 w-1/4">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center border border-outline-variant shadow-[0_0_0_4px_#f9f9ff]">
+<span class="material-symbols-outlined">verified</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Result</span>
+</div>
+</div>
+</div>
+<!-- Main Upload Form Area (Bento-style Grid) -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-stack-gap-lg">
+<!-- Document Upload Section -->
+<div class="col-span-12 md:col-span-8 flex flex-col gap-stack-gap-md">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-container-padding flex-1">
+<div class="flex justify-between items-center mb-stack-gap-md">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Identity Document</h2>
+<!-- Document Type Dropdown -->
+<div class="relative w-48">
+<select class="appearance-none w-full bg-surface-bright border border-outline-variant text-on-surface font-body-md text-body-md rounded-lg pl-3 pr-10 py-2 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 cursor-pointer">
+<option disabled="" selected="" value="">Select Document Type</option>
+<option value="aadhaar">Aadhaar</option>
+<option value="pan">PAN Card</option>
+<option value="passport">Passport</option>
+<option value="driving_licence">Driving Licence</option>
+<option value="voter_id">Voter ID</option>
+<option value="other">Other</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Drag & Drop Zone -->
+<div class="border-2 border-dashed border-outline-variant hover:border-secondary rounded-xl bg-surface-container-low transition-colors duration-200 h-[300px] flex flex-col items-center justify-center text-center p-8 group cursor-pointer">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center mb-4 text-on-surface-variant group-hover:text-secondary group-hover:bg-secondary/10 transition-colors">
+<span class="material-symbols-outlined text-[32px]">note_add</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-1">Drag and drop your document here</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">or click to browse from your computer</p>
+<div class="flex gap-2">
+<span class="px-3 py-1 bg-surface-container border border-outline-variant rounded text-label-md font-label-md text-on-surface-variant uppercase">JPG</span>
+<span class="px-3 py-1 bg-surface-container border border-outline-variant rounded text-label-md font-label-md text-on-surface-variant uppercase">PNG</span>
+<span class="px-3 py-1 bg-surface-container border border-outline-variant rounded text-label-md font-label-md text-on-surface-variant uppercase">PDF</span>
+</div>
+<input accept=".jpg,.jpeg,.png,.pdf" class="hidden" type="file">
+</div>
+</div>
+</div>
+<!-- Selfie Upload Section -->
+<div class="col-span-12 md:col-span-4 flex flex-col gap-stack-gap-md">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-container-padding flex-1 flex flex-col">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-stack-gap-sm">Liveness Check</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack-gap-md">Provide a live selfie to match against the provided identity document.</p>
+<div class="flex-1 border border-outline-variant rounded-xl bg-surface-container-low flex flex-col items-center justify-center p-6 gap-4 relative overflow-hidden">
+<!-- Geometric Placeholder for "No Image Yet" -->
+<div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#74777e 1px, transparent 1px); background-size: 16px 16px;"></div>
+<span class="material-symbols-outlined text-[48px] text-on-surface-variant">face</span>
+<div class="w-full flex flex-col gap-2 mt-4 z-10">
+<button class="w-full bg-surface-container-highest hover:bg-surface-dim border border-outline-variant text-on-surface font-label-md text-label-md py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px]">photo_camera</span>
+                                    Capture Selfie
+                                </button>
+<button class="w-full bg-surface-container-lowest hover:bg-surface-bright border border-outline-variant text-on-surface font-label-md text-label-md py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px]">upload</span>
+                                    Upload File
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div> <!-- End Grid -->
+<!-- Actions & Notice Footer -->
+<div class="mt-stack-gap-lg flex flex-col md:flex-row items-center justify-between gap-stack-gap-md border-t border-outline-variant pt-stack-gap-lg">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+<p class="font-data-mono text-data-mono text-xs">End-to-end encrypted. Data is processed securely in compliance with regional privacy frameworks.</p>
+</div>
+<div class="flex items-center gap-4 w-full md:w-auto">
+<button class="px-6 py-2.5 rounded-lg font-label-md text-label-md text-secondary hover:bg-secondary/10 transition-colors">
+                        Cancel
+                    </button>
+<button class="px-6 py-2.5 rounded-lg font-label-md text-label-md bg-primary text-on-primary hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-sm">
+                        Start AI Verification
+                        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>
