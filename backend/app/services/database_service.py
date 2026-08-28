@@ -67,7 +67,7 @@ def save_verification_record(
         "status": verification_result.get("status"),
         "score": verification_result.get("score"),
         "extracted_fields": extracted_fields or verification_result.get("fields", {}),
-        "verification_checks": verification_result.get("checks", []),
+        "checks": verification_result.get("checks", []),
         "reasons": verification_result.get("reasons", []),
     }
 
@@ -124,3 +124,59 @@ def get_verification_history(limit: int = 50):
     except Exception:
         logger.exception("Failed to fetch verification history")
         return []
+
+
+def delete_verification_record(document_id: str) -> dict:
+    """Delete a verification record by document_id.
+
+    Returns {"success": bool, "message": str, "deleted": int}.
+    """
+    supabase = get_supabase()
+
+    if supabase is None:
+        logger.warning("Cannot delete record: Supabase unavailable")
+        return {"success": False, "message": "Supabase unavailable", "deleted": 0}
+
+    try:
+        response = (
+            supabase
+            .table("verification_records")
+            .delete()
+            .eq("document_id", document_id)
+            .execute()
+        )
+
+        deleted_count = len(response.data) if response.data else 0
+
+        if deleted_count > 0:
+            logger.info(
+                "Deleted verification record %s (%d row(s))",
+                document_id, deleted_count,
+            )
+            return {
+                "success": True,
+                "message": f"Record {document_id} deleted",
+                "deleted": deleted_count,
+            }
+
+        logger.warning(
+            "No record found to delete for document_id=%s", document_id
+        )
+        return {
+            "success": False,
+            "message": f"No record found for {document_id}",
+            "deleted": 0,
+        }
+
+    except Exception as exc:
+        logger.error(
+            "Failed to delete verification record %s: %s: %s",
+            document_id,
+            type(exc).__name__,
+            exc,
+        )
+        return {
+            "success": False,
+            "message": str(exc),
+            "deleted": 0,
+        }

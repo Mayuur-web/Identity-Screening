@@ -6,6 +6,361 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
+/* =====================================================
+   CSS CUSTOM PROPERTIES — Light theme (default)
+   Values are R G B (space-separated) for rgb() compat.
+   ===================================================== */
+:root {
+  /* Surfaces */
+  --color-background: 249 249 255;
+  --color-surface: 249 249 255;
+  --color-surface-dim: 207 218 242;
+  --color-surface-bright: 249 249 255;
+  --color-surface-container-lowest: 255 255 255;
+  --color-surface-container-low: 240 243 255;
+  --color-surface-container: 231 238 255;
+  --color-surface-container-high: 222 232 255;
+  --color-surface-container-highest: 216 227 251;
+  --color-surface-variant: 216 227 251;
+  --color-surface-tint: 80 95 118;
+
+  /* Primary */
+  --color-primary: 0 15 34;
+  --color-on-primary: 255 255 255;
+  --color-primary-container: 21 37 57;
+  --color-on-primary-container: 124 140 164;
+  --color-primary-fixed: 211 228 254;
+  --color-primary-fixed-dim: 183 200 225;
+  --color-on-primary-fixed: 11 28 48;
+  --color-on-primary-fixed-variant: 56 72 93;
+
+  /* Secondary */
+  --color-secondary: 74 62 230;
+  --color-on-secondary: 255 255 255;
+  --color-secondary-container: 100 92 255;
+  --color-on-secondary-container: 255 251 255;
+  --color-secondary-fixed: 226 223 255;
+  --color-secondary-fixed-dim: 195 192 255;
+  --color-on-secondary-fixed: 15 0 105;
+  --color-on-secondary-fixed-variant: 51 29 210;
+
+  /* Tertiary */
+  --color-tertiary: 26 11 0;
+  --color-on-tertiary: 255 255 255;
+  --color-tertiary-container: 51 32 12;
+  --color-on-tertiary-container: 163 134 107;
+  --color-tertiary-fixed: 255 220 189;
+  --color-tertiary-fixed-dim: 225 193 163;
+  --color-on-tertiary-fixed: 41 24 5;
+  --color-on-tertiary-fixed-variant: 89 66 44;
+
+  /* Error */
+  --color-error: 186 26 26;
+  --color-on-error: 255 255 255;
+  --color-error-container: 255 218 214;
+  --color-on-error-container: 147 0 10;
+
+  /* Outline */
+  --color-outline: 116 119 126;
+  --color-outline-variant: 196 198 206;
+
+  /* Inverse */
+  --color-inverse-surface: 38 49 67;
+  --color-inverse-on-surface: 236 241 255;
+  --color-inverse-primary: 183 200 225;
+
+  /* On-surface text */
+  --color-on-surface: 17 28 45;
+  --color-on-surface-variant: 67 71 77;
+  --color-on-background: 17 28 45;
+}
+
+/* =====================================================
+   DARK THEME — CSS CUSTOM PROPERTIES
+   ===================================================== */
+.dark {
+  /* Surfaces — dark navy/charcoal */
+  --color-background: 15 23 36;
+  --color-surface: 20 29 46;
+  --color-surface-dim: 12 18 25;
+  --color-surface-bright: 30 42 62;
+  --color-surface-container-lowest: 10 15 23;
+  --color-surface-container-low: 22 31 48;
+  --color-surface-container: 26 36 56;
+  --color-surface-container-high: 30 41 64;
+  --color-surface-container-highest: 36 49 73;
+  --color-surface-variant: 30 41 64;
+  --color-surface-tint: 168 184 208;
+
+  /* Primary — lighter for contrast on dark */
+  --color-primary: 168 184 208;
+  --color-on-primary: 15 23 36;
+  --color-primary-container: 42 58 82;
+  --color-on-primary-container: 196 212 236;
+  --color-primary-fixed: 42 58 82;
+  --color-primary-fixed-dim: 58 79 106;
+  --color-on-primary-fixed: 196 212 236;
+  --color-on-primary-fixed-variant: 147 163 187;
+
+  /* Secondary — keep brand purple vibrant */
+  --color-secondary: 155 147 255;
+  --color-on-secondary: 15 23 36;
+  --color-secondary-container: 61 54 160;
+  --color-on-secondary-container: 232 228 255;
+  --color-secondary-fixed: 45 40 144;
+  --color-secondary-fixed-dim: 74 67 184;
+  --color-on-secondary-fixed: 200 192 255;
+  --color-on-secondary-fixed-variant: 136 128 232;
+
+  /* Tertiary */
+  --color-tertiary: 232 200 160;
+  --color-on-tertiary: 26 11 0;
+  --color-tertiary-container: 74 42 16;
+  --color-on-tertiary-container: 240 216 184;
+  --color-tertiary-fixed: 58 32 16;
+  --color-tertiary-fixed-dim: 90 58 32;
+  --color-on-tertiary-fixed: 240 216 184;
+  --color-on-tertiary-fixed-variant: 200 168 128;
+
+  /* Error — keep red distinguishable */
+  --color-error: 255 180 171;
+  --color-on-error: 105 0 5;
+  --color-error-container: 147 0 10;
+  --color-on-error-container: 255 218 214;
+
+  /* Outline — low contrast on dark */
+  --color-outline: 107 114 128;
+  --color-outline-variant: 45 55 72;
+
+  /* Inverse */
+  --color-inverse-surface: 232 228 255;
+  --color-inverse-on-surface: 15 23 36;
+  --color-inverse-primary: 61 54 160;
+
+  /* On-surface text — near-white for readability */
+  --color-on-surface: 226 232 240;
+  --color-on-surface-variant: 148 163 184;
+  --color-on-background: 226 232 240;
+}
+
+/* =====================================================
+   DARK MODE — TAILWIND UTILITY OVERRIDES
+   ===================================================== */
+
+/* Backgrounds */
+.dark .bg-background { background-color: rgb(var(--color-background)); }
+.dark .bg-surface { background-color: rgb(var(--color-surface)); }
+.dark .bg-surface-dim { background-color: rgb(var(--color-surface-dim)); }
+.dark .bg-surface-bright { background-color: rgb(var(--color-surface-bright)); }
+.dark .bg-surface-variant { background-color: rgb(var(--color-surface-variant)); }
+.dark .bg-surface-container-lowest { background-color: rgb(var(--color-surface-container-lowest)); }
+.dark .bg-surface-container-low { background-color: rgb(var(--color-surface-container-low)); }
+.dark .bg-surface-container { background-color: rgb(var(--color-surface-container)); }
+.dark .bg-surface-container-high { background-color: rgb(var(--color-surface-container-high)); }
+.dark .bg-surface-container-highest { background-color: rgb(var(--color-surface-container-highest)); }
+
+/* Primary backgrounds */
+.dark .bg-primary { background-color: rgb(var(--color-primary)); }
+.dark .bg-primary-container { background-color: rgb(var(--color-primary-container)); }
+
+/* Secondary backgrounds */
+.dark .bg-secondary-container { background-color: rgb(var(--color-secondary-container)); }
+.dark .bg-secondary-fixed { background-color: rgb(var(--color-secondary-fixed)); }
+
+/* Error backgrounds */
+.dark .bg-error-container { background-color: rgb(var(--color-error-container)); }
+
+/* Inverse backgrounds */
+.dark .bg-inverse-surface { background-color: rgb(var(--color-inverse-surface)); }
+
+/* Text colors */
+.dark .text-on-surface { color: rgb(var(--color-on-surface)); }
+.dark .text-on-surface-variant { color: rgb(var(--color-on-surface-variant)); }
+.dark .text-on-background { color: rgb(var(--color-on-background)); }
+.dark .text-on-primary { color: rgb(var(--color-on-primary)); }
+.dark .text-on-primary-container { color: rgb(var(--color-on-primary-container)); }
+.dark .text-on-secondary-container { color: rgb(var(--color-on-secondary-container)); }
+.dark .text-on-secondary-fixed { color: rgb(var(--color-on-secondary-fixed)); }
+.dark .text-on-error { color: rgb(var(--color-on-error)); }
+.dark .text-on-error-container { color: rgb(var(--color-on-error-container)); }
+.dark .text-on-inverse-surface { color: rgb(var(--color-inverse-on-surface)); }
+.dark .text-on-tertiary-container { color: rgb(var(--color-on-tertiary-container)); }
+.dark .text-primary { color: rgb(var(--color-primary)); }
+.dark .text-secondary { color: rgb(var(--color-secondary)); }
+.dark .text-error { color: rgb(var(--color-error)); }
+.dark .text-outline { color: rgb(var(--color-outline)); }
+
+/* Border colors */
+.dark .border-outline-variant { border-color: rgb(var(--color-outline-variant)); }
+.dark .border-outline { border-color: rgb(var(--color-outline)); }
+
+/* Hover background overrides */
+.dark .hover\:bg-surface-container-high:hover { background-color: rgb(var(--color-surface-container-high)); }
+.dark .hover\:bg-surface-container:hover { background-color: rgb(var(--color-surface-container)); }
+.dark .hover\:bg-surface-dim:hover { background-color: rgb(var(--color-surface-dim)); }
+.dark .hover\:bg-surface-bright:hover { background-color: rgb(var(--color-surface-bright)); }
+.dark .hover\:bg-surface-variant:hover { background-color: rgb(var(--color-surface-variant)); }
+.dark .hover\:bg-surface-container-low:hover { background-color: rgb(var(--color-surface-container-low)); }
+.dark .hover\:bg-surface-container-highest:hover { background-color: rgb(var(--color-surface-container-highest)); }
+.dark .hover\:bg-primary-container:hover { background-color: rgb(var(--color-primary-container)); }
+.dark .hover\:bg-primary\/90:hover { background-color: rgb(var(--color-primary) / 0.9); }
+.dark .hover\:bg-secondary\/10:hover { background-color: rgb(var(--color-secondary) / 0.1); }
+.dark .hover\:bg-error\/10:hover { background-color: rgb(var(--color-error) / 0.1); }
+.dark .hover\:bg-inverse-surface:hover { background-color: rgb(var(--color-inverse-surface)); }
+
+/* Focus ring overrides */
+.dark .focus\:border-secondary:focus { border-color: rgb(var(--color-secondary)); }
+.dark .focus\:ring-secondary:focus { --tw-ring-color: rgb(var(--color-secondary)); }
+.dark .focus\:ring-secondary\/20:focus { --tw-ring-color: rgb(var(--color-secondary) / 0.2); }
+.dark .focus\:ring-secondary\/30:focus { --tw-ring-color: rgb(var(--color-secondary) / 0.3); }
+.dark .focus\:ring-secondary\/50:focus { --tw-ring-color: rgb(var(--color-secondary) / 0.5); }
+
+/* Placeholders */
+.dark .placeholder\:text-outline::placeholder { color: rgb(var(--color-outline)); }
+.dark .placeholder-outline::placeholder { color: rgb(var(--color-outline)); }
+
+/* =====================================================
+   STEPPER LINE (hardcoded in CSS)
+   ===================================================== */
+.dark .stepper-line::before {
+  background-color: #2d3748;
+}
+
+/* =====================================================
+   SCROLLBAR — dark mode
+   ===================================================== */
+.dark ::-webkit-scrollbar-thumb {
+  background: #2d3748;
+}
+
+/* =====================================================
+   SELECTION — dark mode
+   ===================================================== */
+.dark ::selection {
+  background-color: #645cff;
+  color: #ffffff;
+}
+
+/* =====================================================
+   HARDCODED COLOR OVERRIDES (status badges, tables, etc.)
+   ===================================================== */
+
+/* DataTable header background */
+.dark .bg-\[\#F8FAFC\] { background-color: #1a2438 !important; }
+
+/* StatusBadge verified */
+.dark .bg-\[\#dcfce7\] { background-color: rgba(22, 101, 52, 0.3) !important; }
+.dark .text-\[\#166534\] { color: #86efac !important; }
+
+/* StatusBadge flagged/suspicious */
+.dark .bg-\[\#fef3c7\] { background-color: rgba(146, 64, 14, 0.25) !important; }
+.dark .text-\[\#92400e\] { color: #fcd34d !important; }
+
+/* StatusBadge rejected */
+.dark .bg-\[\#fee2e2\] { background-color: rgba(153, 27, 27, 0.25) !important; }
+.dark .text-\[\#991b1b\] { color: #fca5a5 !important; }
+
+/* Score color helpers */
+.dark .score-green { color: #86efac; }
+.dark .score-amber { color: #fcd34d; }
+.dark .score-red { color: #fca5a5; }
+
+/* Verification score badges (inline hex bg/text) */
+.dark .bg-\[\#f0fdf4\] { background-color: rgba(22, 101, 52, 0.2) !important; }
+.dark .bg-\[\#fffbeb\] { background-color: rgba(180, 83, 9, 0.2) !important; }
+.dark .bg-\[\#fef2f2\] { background-color: rgba(153, 27, 27, 0.2) !important; }
+.dark .border-\[\#fca5a5\] { border-color: rgba(252, 165, 165, 0.3) !important; }
+.dark .bg-\[\#f1f5f9\] { background-color: #1e2940 !important; }
+.dark .text-\[\#334155\] { color: #94a3b8 !important; }
+
+/* DocumentAnalysis OCR confidence badges */
+.dark .bg-green-100 { background-color: rgba(22, 101, 52, 0.2) !important; }
+.dark .text-green-800 { color: #86efac !important; }
+.dark .border-green-200 { border-color: rgba(134, 239, 172, 0.3) !important; }
+.dark .bg-amber-100 { background-color: rgba(180, 83, 9, 0.2) !important; }
+.dark .text-amber-800 { color: #fcd34d !important; }
+.dark .border-amber-200 { border-color: rgba(252, 211, 77, 0.3) !important; }
+.dark .bg-red-100 { background-color: rgba(153, 27, 27, 0.2) !important; }
+.dark .text-red-800 { color: #fca5a5 !important; }
+.dark .border-red-200 { border-color: rgba(252, 165, 165, 0.3) !important; }
+
+/* DocumentAnalysis verification result badges */
+.dark .bg-emerald-50 { background-color: rgba(22, 101, 52, 0.2) !important; }
+.dark .border-emerald-200 { border-color: rgba(134, 239, 172, 0.3) !important; }
+.dark .text-emerald-800 { color: #86efac !important; }
+.dark .bg-amber-50 { background-color: rgba(180, 83, 9, 0.2) !important; }
+.dark .border-amber-200 { border-color: rgba(252, 211, 77, 0.3) !important; }
+.dark .text-amber-800 { color: #fcd34d !important; }
+.dark .bg-red-50 { background-color: rgba(153, 27, 27, 0.2) !important; }
+.dark .border-red-200 { border-color: rgba(252, 165, 165, 0.3) !important; }
+.dark .text-red-800 { color: #fca5a5 !important; }
+
+/* DocumentAnalysis check status icons */
+.dark .text-emerald-500 { color: #34d399 !important; }
+.dark .text-emerald-600 { color: #34d399 !important; }
+.dark .text-amber-500 { color: #fbbf24 !important; }
+.dark .text-amber-600 { color: #fbbf24 !important; }
+.dark .text-amber-700 { color: #fbbf24 !important; }
+.dark .text-red-500 { color: #f87171 !important; }
+.dark .text-red-600 { color: #f87171 !important; }
+.dark .text-red-700 { color: #f87171 !important; }
+
+/* Green check circles */
+.dark .text-green-600 { color: #34d399 !important; }
+.dark .bg-green-500 { background-color: #22c55e !important; }
+
+/* DocumentAnalysis reasons section */
+.dark .bg-amber-50 { background-color: rgba(180, 83, 9, 0.15) !important; }
+.dark .text-amber-600 { color: #fbbf24 !important; }
+.dark .text-amber-700 { color: #fbbf24 !important; }
+
+/* RiskReport error border */
+.dark .border-error { border-color: rgb(var(--color-error)) !important; }
+.dark .bg-error { background-color: rgb(var(--color-error)) !important; }
+.dark .bg-error\/\[0\.03\] { background-color: rgb(var(--color-error) / 0.05) !important; }
+.dark .border-error-container { border-color: rgb(var(--color-error-container)) !important; }
+.dark .bg-error-container { background-color: rgb(var(--color-error-container)) !important; }
+
+/* Dashboard chart bar */
+.dark .bg-primary { background-color: rgb(var(--color-primary)); }
+
+/* RiskGauge stroke colors */
+.dark .stroke-error { stroke: #f87171; }
+.dark .stroke-amber-500 { stroke: #fbbf24; }
+.dark .stroke-emerald-500 { stroke: #34d399; }
+
+/* Progress bar colors */
+.dark .stroke-surface-container-high { stroke: rgb(var(--color-surface-container-high)); }
+.dark .stroke-primary { stroke: rgb(var(--color-primary)); }
+
+/* Dashboard risk distribution */
+.dark .border-green-100 { border-color: rgba(22, 101, 52, 0.3) !important; }
+.dark .border-amber-300 { border-color: rgba(180, 83, 9, 0.3) !important; }
+.dark .border-red-500 { border-color: rgba(153, 27, 27, 0.4) !important; }
+.dark .bg-green-100 { background-color: rgba(22, 101, 52, 0.2) !important; }
+
+/* Login page left panel */
+.dark .bg-primary\/80 { background-color: rgb(var(--color-primary-container) / 0.8) !important; }
+.dark .bg-primary\/40 { background-color: rgb(var(--color-primary-container) / 0.4) !important; }
+
+/* Stepper shadow */
+.dark .shadow-\[0_0_0_4px_\#f9f9ff\] { box-shadow: 0 0 0 4px rgb(var(--color-surface-container) / 0.3); }
+
+/* Inconsistent / consistent field badges */
+.dark .bg-surface-container-high { background-color: rgb(var(--color-surface-container-high)); }
+
+/* Material Symbols icon fill in dark */
+.dark .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.dark .icon-fill {
+  font-variation-settings: 'FILL' 1;
+}
+
+/* =====================================================
+   EXISTING NON-DARK OVERRIDES (preserve light mode)
+   ===================================================== */
+
 /* Material Symbols icon fill helper */
 .material-symbols-outlined {
   font-variation-settings:

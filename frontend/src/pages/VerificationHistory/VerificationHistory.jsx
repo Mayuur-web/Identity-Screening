@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageLayout from '../../components/PageLayout'
 import StatusBadge from '../../components/StatusBadge'
 import DataTable from '../../components/DataTable'
-import { DownloadIcon, SearchIcon, CalendarTodayIcon, ExpandMoreIcon, FilterListIcon, ChevronLeftIcon, ChevronRightIcon, BadgeIcon, DirectionsCarIcon, CreditCardIcon } from '../../components/Icons'
+import { DownloadIcon, SearchIcon, ExpandMoreIcon, FilterListIcon, ChevronLeftIcon, ChevronRightIcon, BadgeIcon } from '../../components/Icons'
 
 const API_BASE = '/api'
 
@@ -59,6 +59,8 @@ function mapRecordToRow(record) {
     score: record.score,
     status: statusKey,
     nameColor: statusKey === 'rejected' ? 'text-error' : '',
+    document_type: record.document_type || '',
+    filename: record.filename || '',
   }
 }
 
@@ -70,29 +72,78 @@ export default function VerificationHistory() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    let cancelled = false
-    async function fetchHistory() {
-      setLoading(true)
-      setError(null)
-      try {
-        const res = await fetch(`${API_BASE}/history?limit=100`)
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const data = await res.json()
-        if (!cancelled) {
-          setHistoryData((data.records || []).map(mapRecordToRow))
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err.message || 'Failed to load verification history')
-        }
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
+  // Delete state
+  const [deleteModal, setDeleteModal] = useState(null) // { id, document_type, filename }
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState(null)
+  const [notification, setNotification] = useState(null) // { type: 'success'|'error', message: string }
+
+  const fetchHistory = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(`${API_BASE}/history?limit=100`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      setHistoryData((data.records || []).map(mapRecordToRow))
+    } catch (err) {
+      setError(err.message || 'Failed to load verification history')
+    } finally {
+      setLoading(false)
     }
-    fetchHistory()
-    return () => { cancelled = true }
   }, [])
+
+  useEffect(() => {
+    fetchHistory()
+  }, [fetchHistory])
+
+  // Auto-dismiss notifications
+  useEffect(() => {
+    if (!notification) return
+    const timer = setTimeout(() => setNotification(null), 4000)
+    return () => clearTimeout(timer)
+  }, [notification])
+
+  const handleDeleteClick = (row) => {
+    setDeleteModal({
+      id: row.id,
+      document_type: row.docType,
+      filename: row.applicant,
+    })
+    setDeleteError(null)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal) return
+    setDeleting(true)
+    setDeleteError(null)
+
+    try {
+      const res = await fetch(`${API_BASE}/history/${encodeURIComponent(deleteModal.id)}`, {
+        method: 'DELETE',
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.detail || data.message || `HTTP ${res.status}`)
+      }
+
+      // Remove from local state
+      setHistoryData((prev) => prev.filter((row) => row.id !== deleteModal.id))
+      setDeleteModal(null)
+      setNotification({ type: 'success', message: `Record ${deleteModal.id} deleted successfully.` })
+    } catch (err) {
+      setDeleteError(err.message || 'Failed to delete record')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteModal(null)
+    setDeleteError(null)
+  }
 
   const filteredData = historyData.filter((row) => {
     const matchesFilter =
@@ -114,6 +165,20 @@ export default function VerificationHistory() {
 
   return (
     <PageLayout>
+      {/* Notification Toast */}
+      {notification && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 font-body-md text-body-md transition-all ${
+          notification.type === 'success'
+            ? 'bg-emerald-500 text-white'
+            : 'bg-red-500 text-white'
+        }`}>
+          <span className="material-symbols-outlined text-[18px]">
+            {notification.type === 'success' ? 'check_circle' : 'error'}
+          </span>
+          {notification.message}
+        </div>
+      )}
+
       {/* Page Header */}
       <div className="py-stack-gap-lg flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
@@ -212,7 +277,7 @@ export default function VerificationHistory() {
             <span className="material-symbols-outlined text-[32px] text-error">error</span>
             <span className="font-body-md text-body-md text-on-surface-variant">{error}</span>
             <button
-              onClick={() => window.location.reload()}
+              onClick={fetchHistory}
               className="mt-2 px-4 py-2 bg-secondary text-on-secondary rounded-lg font-label-md text-label-md hover:bg-secondary/90 transition-colors"
             >
               Retry
@@ -285,12 +350,20 @@ export default function VerificationHistory() {
                     <StatusBadge status={row.status} />
                   </td>
                   <td className="px-4 py-2 text-right">
-                    <button
-                      onClick={() => navigate('/document-analysis')}
-                      className="text-secondary hover:text-on-secondary-fixed-variant font-medium text-[13px] transition-opacity opacity-0 group-hover:opacity-100"
-                    >
-                      View Report
-                    </button>
+                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => navigate('/document-analysis')}
+                        className="text-secondary hover:text-on-secondary-fixed-variant font-medium text-[13px] transition-colors"
+                      >
+                        View Report
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(row)}
+                        className="text-error hover:text-red-700 font-medium text-[13px] transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               )
@@ -317,6 +390,102 @@ export default function VerificationHistory() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={handleDeleteCancel}
+          />
+          {/* Modal */}
+          <div className="relative bg-surface-container-lowest border border-outline-variant rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+            {/* Header */}
+            <div className="flex items-start gap-3 mb-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                <span className="material-symbols-outlined text-[22px] text-red-600">delete</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-headline-sm text-headline-sm text-on-surface">Delete Verification Record?</h3>
+                <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                  Are you sure you want to permanently delete this verification record? This action cannot be undone.
+                </p>
+              </div>
+              <button
+                onClick={handleDeleteCancel}
+                className="flex-shrink-0 text-on-surface-variant hover:text-on-surface transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            {/* Record Details */}
+            <div className="bg-background border border-outline-variant rounded-lg p-4 mb-4">
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="font-body-sm text-body-sm text-on-surface-variant">Document ID</span>
+                  <span className="font-data-mono text-data-mono text-on-surface">{deleteModal.id}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-body-sm text-body-sm text-on-surface-variant">Document Type</span>
+                  <span className="font-body-sm text-body-sm text-on-surface font-medium">{deleteModal.document_type}</span>
+                </div>
+                {deleteModal.filename && deleteModal.filename !== 'Unknown' && (
+                  <div className="flex justify-between">
+                    <span className="font-body-sm text-body-sm text-on-surface-variant">Filename</span>
+                    <span className="font-body-sm text-body-sm text-on-surface">{deleteModal.filename}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {deleteError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-start gap-2">
+                <span className="material-symbols-outlined text-[18px] text-red-600 flex-shrink-0 mt-0.5">error</span>
+                <div className="flex-1">
+                  <p className="font-body-sm text-body-sm text-red-700">{deleteError}</p>
+                  <button
+                    onClick={handleDeleteConfirm}
+                    className="font-label-sm text-label-sm text-red-600 hover:text-red-800 underline mt-1"
+                  >
+                    Retry
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-3">
+              <button
+                onClick={handleDeleteCancel}
+                disabled={deleting}
+                className="px-4 py-2 bg-surface-container-high border border-outline-variant text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container-highest transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={deleting}
+                className="px-4 py-2 bg-red-600 text-white font-label-md text-label-md rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-[16px]">delete</span>
+                    Delete
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </PageLayout>
   )

@@ -66,6 +66,71 @@ const aadhaarFieldGroups = [
   },
 ]
 
+function FaceVerificationResult({ data }) {
+  const { status, similarity_score, message } = data
+
+  const statusConfig = {
+    MATCH: {
+      color: 'bg-emerald-50 border-emerald-200',
+      textColor: 'text-emerald-800',
+      icon: 'check_circle',
+      iconColor: 'text-emerald-500',
+      label: 'Face Match',
+    },
+    NO_MATCH: {
+      color: 'bg-red-50 border-red-200',
+      textColor: 'text-red-800',
+      icon: 'cancel',
+      iconColor: 'text-red-500',
+      label: 'Face Match',
+    },
+    NO_FACE: {
+      color: 'bg-red-50 border-red-200',
+      textColor: 'text-red-800',
+      icon: 'error',
+      iconColor: 'text-red-500',
+      label: 'Face Match',
+    },
+    NOT_PROVIDED: {
+      color: 'bg-surface-container-low border-outline-variant',
+      textColor: 'text-on-surface-variant',
+      icon: 'info',
+      iconColor: 'text-on-surface-variant',
+      label: 'Face Match',
+    },
+  }
+
+  const config = statusConfig[status] || statusConfig.NOT_PROVIDED
+
+  return (
+    <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-gutter">
+      <div className="flex items-center justify-between">
+        <h3 className="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+          <span className="material-symbols-outlined text-secondary">face</span>
+          Face Match
+        </h3>
+        <div className="flex items-center gap-3">
+          {similarity_score != null && (
+            <div className="text-right">
+              <div className="font-data-mono text-data-mono text-2xl font-bold text-primary">{similarity_score}%</div>
+              <div className="text-on-surface-variant text-[10px] uppercase tracking-wider">Similarity</div>
+            </div>
+          )}
+          <div className={`px-3 py-1.5 rounded-lg border ${config.color} flex items-center gap-1.5`}>
+            <span className={`material-symbols-outlined text-[18px] ${config.iconColor}`}>{config.icon}</span>
+            <span className={`font-label-md text-label-md font-semibold ${config.textColor}`}>{config.label}</span>
+          </div>
+        </div>
+      </div>
+      {status === 'NOT_PROVIDED' ? (
+        <p className="mt-3 font-body-md text-body-md text-on-surface-variant">Not checked — selfie not provided</p>
+      ) : message ? (
+        <p className="mt-3 font-body-md text-body-md text-on-surface-variant">{message}</p>
+      ) : null}
+    </div>
+  )
+}
+
 function VerificationResults({ data }) {
   const status = data.status
   const score = data.score
@@ -376,6 +441,11 @@ export default function DocumentAnalysis() {
                     </div>
                   </div>
                 ))}
+
+                {/* Face Verification Results */}
+                {analysisData?.face_verification && (
+                  <FaceVerificationResult data={analysisData.face_verification} />
+                )}
 
                 {/* Verification Results */}
                 {analysisData?.status && (

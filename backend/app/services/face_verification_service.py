@@ -19,6 +19,7 @@ Design decisions:
 
 import os
 import logging
+from pathlib import Path
 from typing import Optional
 
 import cv2
@@ -26,11 +27,24 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-# YuNet model for face detection (bundled with OpenCV 5)
-_YUNET_MODEL = os.path.join(
+# YuNet model for face detection
+# Primary: project-controlled location (backend/models/)
+# Fallback: OpenCV's bundled data directory
+_BACKEND_DIR = Path(__file__).resolve().parent.parent.parent  # backend/
+_YUNET_MODEL_PRIMARY = _BACKEND_DIR / "models" / "face_detection_yunet_2023mar.onnx"
+_YUNET_MODEL_FALLBACK = os.path.join(
     os.path.dirname(cv2.__file__), "data",
     "face_detection_yunet_2023mar.onnx",
 )
+
+
+def _resolve_model_path() -> str:
+    """Resolve the YuNet model path, preferring the project-local copy."""
+    if _YUNET_MODEL_PRIMARY.is_file():
+        return str(_YUNET_MODEL_PRIMARY)
+    if os.path.isfile(_YUNET_MODEL_FALLBACK):
+        return _YUNET_MODEL_FALLBACK
+    return str(_YUNET_MODEL_PRIMARY)  # return primary path for error message
 
 # Face detection parameters
 _SCORE_THRESHOLD = 0.3
@@ -60,12 +74,23 @@ _WEIGHT_PIXEL_DIFF = 0.25
 
 def _get_detector():
     """Create and return a FaceDetectorYN instance, or None."""
-    if not os.path.isfile(_YUNET_MODEL):
-        logger.warning("YuNet model not found: %s", _YUNET_MODEL)
+    model_path = _resolve_model_path()
+    if not os.path.isfile(model_path):
+        logger.error(
+            "YuNet face detection model not found.\n"
+            "  Expected at: %s\n"
+            "  Fallback checked: %s\n"
+            "  Please download the model from:\n"
+            "    https://github.com/opencv/opencv_zoo/tree/main/models/face_detection_yunet\n"
+            "  and place it at: %s",
+            _YUNET_MODEL_PRIMARY,
+            _YUNET_MODEL_FALLBACK,
+            _YUNET_MODEL_PRIMARY,
+        )
         return None
     try:
         return cv2.FaceDetectorYN_create(
-            model=_YUNET_MODEL,
+            model=model_path,
             config="",
             input_size=(320, 320),
             score_threshold=_SCORE_THRESHOLD,

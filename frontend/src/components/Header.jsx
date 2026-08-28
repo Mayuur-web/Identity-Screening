@@ -1,6 +1,9 @@
 import { SearchIcon, NotificationsIcon, AccountCircleIcon } from './Icons'
+import { useTheme } from '../contexts/ThemeContext'
 
 export default function Header({ showSearch = false }) {
+  const { theme, toggleTheme } = useTheme()
+
   return (
     <nav className="fixed top-0 right-0 w-full md:w-[calc(100%-16rem)] h-16 bg-surface border-b border-outline-variant flex justify-between items-center px-container-padding z-40">
       <div className="flex items-center gap-4 md:hidden">
@@ -22,6 +25,15 @@ export default function Header({ showSearch = false }) {
         )}
         <div className="flex items-center gap-4">
           <a className="text-on-surface-variant hover:text-primary cursor-pointer transition-opacity duration-150 hover:opacity-80 font-body-md text-body-md hidden lg:block" href="#">System Status</a>
+          <button
+            onClick={toggleTheme}
+            className="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-high"
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            <span className="material-symbols-outlined text-[22px]">
+              {theme === 'dark' ? 'light_mode' : 'dark_mode'}
+            </span>
+          </button>
           <button className="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-high">
             <NotificationsIcon />
           </button>

@@ -32,6 +32,11 @@ export default function NewVerification() {
   const [statusMessage, setStatusMessage] = useState('')
   const [error, setError] = useState(null)
   const fileInputRef = useRef(null)
+  const [selfieFile, setSelfieFile] = useState(null)
+  const [selfieFileName, setSelfieFileName] = useState(null)
+  const [selfiePreview, setSelfiePreview] = useState(null)
+  const selfieInputRef = useRef(null)
+  const selfieCameraRef = useRef(null)
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -70,6 +75,9 @@ export default function NewVerification() {
       formData.append('file', selectedFile)
       if (docType) {
         formData.append('document_type', docType)
+      }
+      if (selfieFile) {
+        formData.append('selfie', selfieFile)
       }
 
       const analyzeResponse = await fetch(`${API_BASE}/documents/verify`, {
@@ -220,23 +228,87 @@ export default function NewVerification() {
         {/* Selfie Upload Section */}
         <div className="col-span-12 md:col-span-4 flex flex-col gap-stack-gap-md">
           <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-container-padding flex-1 flex flex-col">
-            <h2 className="font-headline-sm text-headline-sm text-on-surface mb-stack-gap-sm">Liveness Check</h2>
+            <h2 className="font-headline-sm text-headline-sm text-on-surface mb-stack-gap-sm">Selfie (Optional)</h2>
             <p className="font-body-md text-body-md text-on-surface-variant mb-stack-gap-md">
-              Provide a live selfie to match against the provided identity document.
+              Upload a selfie to verify your face against the photo on your document.
             </p>
             <div className="flex-1 border border-outline-variant rounded-xl bg-surface-container-low flex flex-col items-center justify-center p-6 gap-4 relative overflow-hidden">
-              <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#74777e 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
-              <span className="material-symbols-outlined text-[48px] text-on-surface-variant">face</span>
-              <div className="w-full flex flex-col gap-2 mt-4 z-10">
-                <button className="w-full bg-surface-container-highest hover:bg-surface-dim border border-outline-variant text-on-surface font-label-md text-label-md py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                  <PhotoCameraIcon className="text-[18px]" />
-                  Capture Selfie
-                </button>
-                <button className="w-full bg-surface-container-lowest hover:bg-surface-bright border border-outline-variant text-on-surface font-label-md text-label-md py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                  <UploadIcon className="text-[18px]" />
-                  Upload File
-                </button>
-              </div>
+              {selfiePreview ? (
+                <>
+                  <div className="w-full max-h-[200px] overflow-hidden rounded-lg border border-outline-variant">
+                    <img src={selfiePreview} alt="Selfie preview" className="w-full h-full object-contain max-h-[200px]" />
+                  </div>
+                  <div className="w-full flex flex-col gap-2 z-10">
+                    <p className="font-label-md text-label-md text-on-surface truncate text-center">{selfieFileName}</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); selfieInputRef.current?.click(); }}
+                        className="flex-1 bg-surface-container-highest hover:bg-surface-dim border border-outline-variant text-on-surface font-label-md text-label-md py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                      >
+                        <UploadIcon className="text-[18px]" />
+                        Change
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setSelfieFile(null); setSelfieFileName(null); setSelfiePreview(null); }}
+                        className="flex-1 bg-error-container hover:bg-error/10 border border-error/30 text-on-surface font-label-md text-label-md py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[18px] text-error">close</span>
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#74777e 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
+                  <span className="material-symbols-outlined text-[48px] text-on-surface-variant">face</span>
+                  <div className="w-full flex flex-col gap-2 mt-4 z-10">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); selfieCameraRef.current?.click(); }}
+                      className="w-full bg-surface-container-highest hover:bg-surface-dim border border-outline-variant text-on-surface font-label-md text-label-md py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                    >
+                      <PhotoCameraIcon className="text-[18px]" />
+                      Capture Selfie
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); selfieInputRef.current?.click(); }}
+                      className="w-full bg-surface-container-lowest hover:bg-surface-bright border border-outline-variant text-on-surface font-label-md text-label-md py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                    >
+                      <UploadIcon className="text-[18px]" />
+                      Upload File
+                    </button>
+                  </div>
+                </>
+              )}
+              <input
+                ref={selfieInputRef}
+                accept=".jpg,.jpeg,.png,.webp"
+                className="hidden"
+                type="file"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    const file = e.target.files[0]
+                    setSelfieFile(file)
+                    setSelfieFileName(file.name)
+                    setSelfiePreview(URL.createObjectURL(file))
+                  }
+                }}
+              />
+              <input
+                ref={selfieCameraRef}
+                accept=".jpg,.jpeg,.png,.webp"
+                capture="user"
+                className="hidden"
+                type="file"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    const file = e.target.files[0]
+                    setSelfieFile(file)
+                    setSelfieFileName(file.name)
+                    setSelfiePreview(URL.createObjectURL(file))
+                  }
+                }}
+              />
             </div>
           </div>
         </div>

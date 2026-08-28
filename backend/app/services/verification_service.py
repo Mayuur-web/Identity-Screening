@@ -416,7 +416,7 @@ def verify_document(
     Returns:
         dict with status, score, checks, reasons, fields_checked.
     """
-    doc_type = (document_type or fields.get("document_type", "")).lower()
+    doc_type = (document_type or fields.get("document_type") or "").lower()
 
     # Collect fields_checked for transparency
     fields_checked = []

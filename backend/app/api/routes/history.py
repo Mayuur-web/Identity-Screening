@@ -3,9 +3,9 @@
 import json
 from datetime import datetime, date
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Path
 
-from app.services.database_service import get_verification_history
+from app.services.database_service import get_verification_history, delete_verification_record
 
 router = APIRouter(prefix="/history", tags=["history"])
 
@@ -50,3 +50,22 @@ async def verification_history(limit: int = 100):
             "count": 0,
             "records": [],
         }
+
+
+@router.delete("/{document_id}")
+async def delete_verification(document_id: str = Path(..., description="Document ID to delete")):
+    """Delete an individual verification record by document_id."""
+
+    result = delete_verification_record(document_id)
+
+    if result["success"]:
+        return {
+            "success": True,
+            "message": result["message"],
+            "deleted": result["deleted"],
+        }
+
+    if "No record found" in result["message"]:
+        raise HTTPException(status_code=404, detail=result["message"])
+
+    raise HTTPException(status_code=500, detail=result["message"])
