@@ -11,6 +11,14 @@ const integrityChecks = [
   { label: 'Req. Fields', status: 'not_implemented' },
 ]
 
+const DOC_TYPE_DISPLAY = {
+  aadhaar: 'Aadhaar',
+  passport: 'Passport',
+  pan: 'PAN Card',
+  driving_licence: 'Driving Licence',
+  voter_id: 'Voter ID',
+}
+
 // Field configurations per document type
 const passportFieldGroups = [
   {
@@ -419,7 +427,9 @@ export default function DocumentAnalysis() {
                               </div>
                               <div className="mt-1">
                                 {isExtracted ? (
-                                  <span className={`font-data-mono text-data-mono font-bold ${isConflict ? 'text-red-600' : 'text-primary'}`}>{value}</span>
+                                  <span className={`font-data-mono text-data-mono font-bold ${isConflict ? 'text-red-600' : 'text-primary'}`}>{
+                                    key === 'document_type' ? (DOC_TYPE_DISPLAY[value] || value) : value
+                                  }</span>
                                 ) : (
                                   <span className="font-data-mono text-data-mono text-outline">—</span>
                                 )}

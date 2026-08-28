@@ -187,15 +187,18 @@ def detect_mrz(ocr_lines: list[dict], image_height: Optional[int] = None) -> dic
             # Validate the MRZ pair structurally before accepting
             l1 = line1.upper().strip()
             l2 = line2.upper().strip()
-            l1_padded = l1.ljust(44, "<")
-            l2_padded = l2.ljust(44, "<")
-            if validate_mrz_passport(l1_padded, l2_padded):
-                candidates.append({
-                    "line1": line1,
-                    "line2": line2,
-                    "confidence": round((conf1 + conf2) / 2, 4),
-                    "index": i,
-                })
+            # Try original lines and OCR-corruption fixes for line 1
+            for l1_fixed in _normalize_mrz_line1(l1):
+                l1_padded = l1_fixed.ljust(44, "<")
+                l2_padded = l2.ljust(44, "<")
+                if validate_mrz_passport(l1_padded, l2_padded):
+                    candidates.append({
+                        "line1": l1_fixed.ljust(44, "<"),
+                        "line2": line2.upper().strip().ljust(44, "<"),
+                        "confidence": round((conf1 + conf2) / 2, 4),
+                        "index": i,
+                    })
+                    break
 
     if candidates:
         # Prefer the last MRZ occurrence (usually at the bottom of the document)
@@ -348,16 +351,157 @@ def parse_mrz_generic(mrz_data: dict) -> dict:
 # MRZ-specific image extraction
 # =============================================================================
 
-def extract_mrz_from_image(image_path: str) -> dict:
-    """Extract MRZ by cropping the bottom region of a passport image.
+def _preprocess_mrz_region(crop_bgr, sharpness: float = 0.0) -> list[tuple[str, "np.ndarray"]]:
+    """Create preprocessing variants for an MRZ image crop.
 
-    Process:
-    1. Load image
-    2. Crop bottom 25% (where MRZ lives)
-    3. Upscale 3x
-    4. Grayscale + CLAHE contrast
-    5. Run EasyOCR
-    6. Normalize and detect MRZ lines
+    Returns a list of (variant_name, processed_image) tuples.
+    Each variant is a grayscale image suitable for EasyOCR.
+    """
+    import cv2
+    import numpy as np
+
+    gray = cv2.cvtColor(crop_bgr, cv2.COLOR_BGR2GRAY) if len(crop_bgr.shape) == 3 else crop_bgr
+
+    # Upscale 4x (sweet spot for MRZ characters at typical passport resolutions)
+    h, w = gray.shape[:2]
+    scale = 4
+    upscaled = cv2.resize(gray, (w * scale, h * scale), interpolation=cv2.INTER_CUBIC)
+
+    variants = []
+
+    # Variant A: CLAHE contrast enhancement (good general-purpose)
+    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+    variants.append(("clahe", clahe.apply(upscaled)))
+
+    # Variant B: CLAHE + unsharp mask (enhances MRZ character edges)
+    blurred = cv2.GaussianBlur(upscaled, (0, 0), 3)
+    sharpened = cv2.addWeighted(upscaled, 1.5, blurred, -0.5, 0)
+    variants.append(("sharp", sharpened))
+
+    # Variant C: Otsu binarization (helps with low-contrast / security patterns)
+    _, otsu = cv2.threshold(upscaled, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    variants.append(("otsu", otsu))
+
+    return variants
+
+
+def _normalize_mrz_line1(line: str) -> list[str]:
+    """Try to fix common OCR corruptions of MRZ line 1.
+
+    Returns a list of candidate corrections to try, in order of likelihood.
+    The first candidate is the original line unchanged.
+    """
+    candidates = [line]  # Always try the original first
+
+    # Fix 1: P< read as PI, P1, PIND, etc.
+    # If line starts with P followed by a non-< char, try inserting < after P
+    if len(line) >= 2 and line[0] == "P" and line[1] != "<":
+        # Try P< + rest (replace char after P with <)
+        fixed = "P<" + line[2:]
+        if fixed not in candidates:
+            candidates.append(fixed)
+        # Also try P< + everything from position 1 (insert < at position 1)
+        fixed2 = "P<" + line[1:]
+        if fixed2 not in candidates:
+            candidates.append(fixed2)
+
+    # Fix 2: Missing << in name area (positions 5-14)
+    # Some passports use single < in name, MRZ spec requires <<
+    if len(line) >= 15:
+        name_area = line[5:15]
+        if "<<" not in name_area and "<" in name_area:
+            # Try doubling the < separators
+            fixed = line[:5] + name_area.replace("<", "<<") + line[15:]
+            if fixed not in candidates:
+                candidates.append(fixed)
+
+    return candidates
+
+
+def _try_detect_mrz_from_variants(
+    reader,
+    image_path: str,
+    crop_bgr,
+    crop_label: str,
+    temp_prefix: str,
+) -> Optional[dict]:
+    """Run EasyOCR on preprocessing variants of a crop and try to detect MRZ.
+
+    Returns a result dict if MRZ is detected, otherwise None.
+    Performs early exit — stops as soon as a valid MRZ is found.
+    """
+    import cv2
+
+    variants = _preprocess_mrz_region(crop_bgr)
+
+    for variant_name, variant_img in variants:
+        tag = f"{temp_prefix}_{variant_name}"
+        temp_path = image_path.rsplit(".", 1)[0] + f"_mrz_{tag}.png"
+        try:
+            cv2.imwrite(temp_path, variant_img)
+            ocr_results = reader.readtext(temp_path)
+        except Exception as e:
+            logger.debug(f"EasyOCR failed on {tag}: {e}")
+            continue
+        finally:
+            try:
+                os.remove(temp_path)
+            except OSError:
+                pass
+
+        # Normalize OCR output to MRZ characters
+        normalized = []
+        for bbox, text, conf in ocr_results:
+            if text and text.strip():
+                text_upper = text.strip().upper()
+                text_clean = re.sub(r"[^A-Z0-9<]", "", text_upper)
+                if text_clean:
+                    normalized.append({"text": text_clean, "confidence": round(float(conf), 4)})
+
+        if len(normalized) < 2:
+            continue
+
+        # Try consecutive-line MRZ detection
+        for i in range(len(normalized) - 1):
+            l1 = normalized[i]["text"]
+            l2 = normalized[i + 1]["text"]
+            if l1 == l2:
+                continue
+            if not (is_mrz_line(l1) and is_mrz_line(l2)):
+                continue
+
+            # Try the original lines first, then OCR-corruption fixes for line 1
+            l1_candidates = _normalize_mrz_line1(l1)
+            for l1_fixed in l1_candidates:
+                l1_pad = l1_fixed.ljust(44, "<")
+                l2_pad = l2.ljust(44, "<")
+                if validate_mrz_passport(l1_pad, l2_pad):
+                    conf = round(
+                        (normalized[i]["confidence"] + normalized[i + 1]["confidence"]) / 2, 4
+                    )
+                    logger.info(
+                        f"MRZ detected from {crop_label} variant={variant_name} "
+                        f"lines {i}-{i+1} conf={conf}"
+                    )
+                    return {
+                        "detected": True,
+                        "line1": l1_pad,
+                        "line2": l2_pad,
+                        "confidence": conf,
+                    }
+
+    return None
+
+
+def extract_mrz_from_image(image_path: str) -> dict:
+    """Extract MRZ from a passport image using multi-region cropping.
+
+    Tries several bottom-region crops (bottom 15%, 20%, 25%, 30%) with
+    multiple preprocessing variants per crop.  Exits early as soon as a
+    valid MRZ is found, keeping the total number of readtext() calls low.
+
+    Falls back to character-split reconstruction if the primary strategy
+    does not find a valid MRZ.
 
     Returns dict with: detected, line1, line2, confidence, raw_lines
     """
@@ -381,108 +525,63 @@ def extract_mrz_from_image(image_path: str) -> dict:
         return result
 
     try:
-        # Load image
         img = cv2.imread(image_path)
         if img is None:
             logger.error(f"Failed to read image: {image_path}")
             return result
 
         h, w = img.shape[:2]
+        logger.info(f"[MRZ] Image size: {w}x{h}")
 
-        # Crop bottom 25% where MRZ lives
-        crop_start = int(h * 0.75)
-        mrz_crop = img[crop_start:h, :]
+        from app.services.ocr_service import get_easyocr_reader
+        reader = get_easyocr_reader()
 
-        # Upscale 3x for better OCR
-        scale = 3
-        mrz_crop = cv2.resize(mrz_crop, (w * scale, (h - crop_start) * scale),
-                              interpolation=cv2.INTER_CUBIC)
+        # ------------------------------------------------------------------
+        # Strategy 1: Multi-region crop with early exit
+        # Try different bottom-region sizes.  MRZ position varies across
+        # passport layouts (landscape vs portrait, with/without margins).
+        # ------------------------------------------------------------------
+        crop_pcts = [0.15, 0.20, 0.25, 0.30]
+        ocr_call_count = 0
 
-        # Grayscale
-        gray = cv2.cvtColor(mrz_crop, cv2.COLOR_BGR2GRAY) if len(mrz_crop.shape) == 3 else mrz_crop
+        for crop_pct in crop_pcts:
+            crop_start = int(h * (1.0 - crop_pct))
+            crop_bgr = img[crop_start:h, :]
+            crop_h = crop_bgr.shape[0]
+            if crop_h < 20:
+                continue
 
-        # CLAHE contrast enhancement
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        enhanced = clahe.apply(gray)
+            label = f"bottom-{int(crop_pct*100)}%"
+            detected = _try_detect_mrz_from_variants(
+                reader, image_path, crop_bgr, label, f"mrz_{int(crop_pct*100)}",
+            )
+            # Each _try_detect_mrz_from_variants call runs up to 3 readtext
+            # calls (3 preprocessing variants) but exits early on success.
+            ocr_call_count += 3  # worst case per crop region
 
-        # Save temp file for OCR
-        temp_path = image_path.rsplit(".", 1)[0] + "_mrz_crop.png"
-        cv2.imwrite(temp_path, enhanced)
+            if detected is not None:
+                result.update(detected)
+                logger.info(
+                    f"[MRZ] Primary detection succeeded at {label} "
+                    f"(~{ocr_call_count} readtext calls max)"
+                )
+                return result
 
-        # Run EasyOCR on the enhanced crop
-        try:
-            import easyocr
-            reader = easyocr.Reader(["en"], gpu=False, verbose=False)
-            ocr_results = reader.readtext(temp_path)
-        except Exception as e:
-            logger.warning(f"EasyOCR failed on MRZ crop: {e}")
-            ocr_results = []
-        finally:
-            # Cleanup temp file
-            try:
-                os.remove(temp_path)
-            except OSError:
-                pass
-
-        # Process OCR results
-        raw_lines = []
-        for bbox, text, confidence in ocr_results:
-            if text and text.strip():
-                raw_lines.append({
-                    "text": text.strip(),
-                    "confidence": round(float(confidence), 4),
-                })
-
-        result["raw_lines"] = raw_lines
-
-        # Normalize and detect MRZ lines
-        if raw_lines:
-            # Normalize each line to MRZ characters
-            normalized = []
-            for line in raw_lines:
-                text = line["text"].upper()
-                text = re.sub(r"[^A-Z0-9<]", "", text)
-                normalized.append({
-                    "text": text,
-                    "confidence": line["confidence"],
-                })
-
-            # Strategy 1: Find two consecutive MRZ-like lines
-            for i in range(len(normalized) - 1):
-                line1_raw = normalized[i]["text"]
-                line2_raw = normalized[i + 1]["text"]
-
-                # Reject identical lines
-                if line1_raw == line2_raw:
-                    continue
-
-                if is_mrz_line(line1_raw) and is_mrz_line(line2_raw):
-                    # Do NOT apply O->0 / I->1 globally — it corrupts
-                    # nationality codes like IND → 1ND
-                    line1_padded = line1_raw.ljust(44, "<")
-                    line2_padded = line2_raw.ljust(44, "<")
-                    if validate_mrz_passport(line1_padded, line2_padded):
-                        result["detected"] = True
-                        result["line1"] = line1_padded
-                        result["line2"] = line2_padded
-                        result["confidence"] = round(
-                            (normalized[i]["confidence"] + normalized[i + 1]["confidence"]) / 2, 4
-                        )
-                        logger.info(f"MRZ detected from consecutive lines {i}-{i+1}")
-                        break
-
-            # No fragment merging strategy. If two consecutive MRZ lines are not
-            # detected, the MRZ is not present. Merging fragments from different
-            # parts of the document can produce invalid MRZ.
+        logger.info(
+            f"[MRZ] Primary detection exhausted {len(crop_pcts)} regions, "
+            f"falling back to character-split"
+        )
 
     except Exception as e:
         logger.error(f"MRZ image extraction failed: {e}")
 
-    # Fallback: if normal extraction failed, try character-split reconstruction
-    if not result["detected"]:
-        cs_result = extract_mrz_character_split(image_path)
-        if cs_result["detected"]:
-            return cs_result
+    # ------------------------------------------------------------------
+    # Strategy 2: Character-split reconstruction (fallback)
+    # For low-res or heavily patterned images where whole-word OCR fails.
+    # ------------------------------------------------------------------
+    cs_result = extract_mrz_character_split(image_path)
+    if cs_result["detected"]:
+        return cs_result
 
     return result
 
@@ -761,12 +860,12 @@ def extract_mrz_character_split(image_path: str) -> dict:
         h, w = img.shape[:2]
         logger.warning(f"[MRZ-CS] Image size: {w}x{h}")
 
-        # Try multiple bottom-region crops
-        crop_percentages = [0.15, 0.20, 0.25, 0.30]
+        # Try bottom-region crops (2 crops × 2 variants = 4 readtext calls max)
+        crop_percentages = [0.20, 0.25]
 
         try:
-            import easyocr
-            reader = easyocr.Reader(["en"], gpu=False, verbose=False)
+            from app.services.ocr_service import get_easyocr_reader
+            reader = get_easyocr_reader()
         except Exception as e:
             logger.warning(f"EasyOCR failed to initialize for character-split: {e}")
             return result
@@ -792,27 +891,13 @@ def extract_mrz_character_split(image_path: str) -> dict:
 
             variants = []
 
-            # Variant 1: CLAHE
+            # Variant 1: CLAHE contrast enhancement
             clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
             variants.append(("clahe", clahe.apply(gray)))
 
-            # Variant 2: Otsu threshold
+            # Variant 2: Otsu binarization (helps with low-contrast MRZ)
             _, otsu = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
             variants.append(("otsu", otsu))
-
-            # Variant 3: Inverted Otsu
-            _, otsu_inv = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-            variants.append(("otsu_inv", otsu_inv))
-
-            # Variant 4: Adaptive threshold
-            adaptive = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                              cv2.THRESH_BINARY, 11, 2)
-            variants.append(("adaptive", adaptive))
-
-            # Variant 5: CLAHE + sharpen
-            kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-            sharpened = cv2.filter2D(clahe.apply(gray), -1, kernel)
-            variants.append(("sharpen", sharpened))
 
             for variant_name, variant_img in variants:
                 tag = f"cs_{crop_pct}_{variant_name}"

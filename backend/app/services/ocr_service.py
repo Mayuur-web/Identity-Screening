@@ -29,6 +29,16 @@ def _get_reader():
     return _reader_instance
 
 
+def get_easyocr_reader():
+    """Public accessor: return the shared, lazily-initialized EasyOCR reader.
+
+    Other services (MRZ, face verification) should call this instead of
+    creating their own ``easyocr.Reader`` to avoid the ~1.3 s model-load
+    penalty on every invocation.
+    """
+    return _get_reader()
+
+
 def _run_ocr_on_image(image_path: str) -> list[dict]:
     """Run EasyOCR on a single image and return raw detections."""
     try:

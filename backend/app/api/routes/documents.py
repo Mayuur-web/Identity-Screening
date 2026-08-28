@@ -2,6 +2,7 @@
 
 import logging
 import os
+import time
 from typing import Optional
 
 from fastapi import APIRouter, File, Form, UploadFile, HTTPException
@@ -27,7 +28,7 @@ from app.services.mrz_service import (
     detect_mrz,
     extract_mrz_from_image,
 )
-from app.services.verification_service import verify_document
+from app.services.verification_service import verify_document, normalize_document_type, detect_document_type_from_ocr
 from app.services.face_verification_service import verify_faces
 
 logger = logging.getLogger(__name__)
@@ -233,15 +234,17 @@ async def analyze_document(
         f.write(content)
 
     try:
-        doc_type = (
+        raw_doc_type = (
             document_type
-            if document_type != "other"
+            if document_type not in ("other", "")
             else None
         )
+        doc_type = normalize_document_type(raw_doc_type)
 
         logger.info(
-            "Starting document analysis: id=%s type=%s file=%s",
+            "Starting document analysis: id=%s raw_type=%s normalized=%s file=%s",
             doc_id,
+            raw_doc_type,
             doc_type,
             original_name,
         )
@@ -259,6 +262,17 @@ async def analyze_document(
                     f"{ocr_result.get('error', 'Unknown error')}"
                 ),
             )
+
+        # Auto-detect document type from OCR text when not provided
+        if doc_type is None:
+            doc_type = detect_document_type_from_ocr(
+                ocr_result["lines"]
+            )
+            if doc_type:
+                logger.info(
+                    "Auto-detected document type: %s for %s",
+                    doc_type, doc_id,
+                )
 
         mrz_data = None
 
@@ -425,24 +439,32 @@ async def verify_document_endpoint(
         f.write(content)
 
     try:
-        doc_type = (
+        # Normalize the document type from the frontend value.
+        # "other" means the user did not pick a type — treat as None so
+        # we can try auto-detection after OCR.
+        raw_doc_type = (
             document_type
-            if document_type != "other"
+            if document_type not in ("other", "")
             else None
         )
+        doc_type = normalize_document_type(raw_doc_type)
 
         logger.info(
-            "Starting verification: id=%s type=%s file=%s",
+            "Starting verification: id=%s raw_type=%s normalized=%s file=%s",
             doc_id,
+            raw_doc_type,
             doc_type,
             original_name,
         )
 
-        # OCR
+        # OCR — pass the initial type hint for preprocessing
+        t0 = time.time()
         ocr_result = await ocr_service.extract_text(
             image_path=upload_path,
             document_type=doc_type,
         )
+        t1 = time.time()
+        logger.info("[TIMING] OCR: %.2fs", t1 - t0)
 
         if not ocr_result["success"]:
             raise HTTPException(
@@ -453,30 +475,53 @@ async def verify_document_endpoint(
                 ),
             )
 
+        # Auto-detect document type from OCR text when not provided
+        if doc_type is None:
+            doc_type = detect_document_type_from_ocr(
+                ocr_result["lines"]
+            )
+            if doc_type:
+                logger.info(
+                    "Auto-detected document type: %s for %s",
+                    doc_type, doc_id,
+                )
+
         # Field extraction
         mrz_data = None
 
         if doc_type == "passport":
+            t2 = time.time()
             mrz_data = extract_mrz_from_image(
                 upload_path
             )
+            t3 = time.time()
+            logger.info("[TIMING] MRZ image extraction: %.2fs (detected=%s)", t3 - t2, mrz_data.get('detected'))
 
             if not mrz_data.get("detected"):
+                t3b = time.time()
                 mrz_data = detect_mrz(
                     ocr_result["lines"]
                 )
+                t4 = time.time()
+                logger.info("[TIMING] MRZ text detection: %.2fs (detected=%s)", t4 - t3b, mrz_data.get('detected'))
 
+            t5 = time.time()
             fields = extract_passport_fields(
                 ocr_lines=ocr_result["lines"],
                 mrz_data=mrz_data,
             )
+            t6 = time.time()
+            logger.info("[TIMING] Passport field extraction: %.2fs", t6 - t5)
 
         else:
+            t2 = time.time()
             fields = extract_fields(
                 ocr_lines=ocr_result["lines"],
                 document_type=doc_type,
                 mrz_data=None,
             )
+            t3 = time.time()
+            logger.info("[TIMING] Aadhaar field extraction: %.2fs", t3 - t2)
 
         # Verification
         ocr_meta = {
@@ -488,12 +533,15 @@ async def verify_document_endpoint(
             ),
         }
 
+        t7 = time.time()
         verification = verify_document(
             fields=fields,
             ocr_data=ocr_meta,
             mrz_data=mrz_data,
             document_type=doc_type,
         )
+        t8 = time.time()
+        logger.info("[TIMING] Verification engine: %.2fs", t8 - t7)
 
         # --- Face verification (optional) ---
         face_verification = {

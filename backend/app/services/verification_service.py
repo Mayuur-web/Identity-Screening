@@ -13,6 +13,91 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
+# Document type normalization
+# =============================================================================
+
+# Canonical document types recognized by the verification engine
+DOC_TYPE_AADHAAR = "aadhaar"
+DOC_TYPE_PASSPORT = "passport"
+DOC_TYPE_PAN = "pan"
+
+# Maps every known variant/spelling/alias to the canonical lowercase value
+_DOC_TYPE_ALIASES: dict[str, str] = {
+    # Aadhaar variants
+    "aadhaar": DOC_TYPE_AADHAAR,
+    "aadhar": DOC_TYPE_AADHAAR,
+    "aadhaar card": DOC_TYPE_AADHAAR,
+    "aadhar card": DOC_TYPE_AADHAAR,
+    "aadhaAR": DOC_TYPE_AADHAAR,
+    "uidai": DOC_TYPE_AADHAAR,
+    "unique identification": DOC_TYPE_AADHAAR,
+    # Passport variants
+    "passport": DOC_TYPE_PASSPORT,
+    "passport card": DOC_TYPE_PASSPORT,
+    # PAN variants
+    "pan": DOC_TYPE_PAN,
+    "pan card": DOC_TYPE_PAN,
+    "permanent account number": DOC_TYPE_PAN,
+}
+
+
+def normalize_document_type(value: Optional[str]) -> Optional[str]:
+    """Normalize any document-type string to a canonical internal value.
+
+    Returns one of DOC_TYPE_AADHAAR, DOC_TYPE_PASSPORT, DOC_TYPE_PAN,
+    or None when the value cannot be recognized.
+    """
+    if not value:
+        return None
+    key = value.strip().lower()
+    if not key:
+        return None
+    # Direct alias lookup
+    canonical = _DOC_TYPE_ALIASES.get(key)
+    if canonical:
+        return canonical
+    # Substring fallback — e.g. "aadhaar card front" → "aadhaar"
+    for alias, canon in _DOC_TYPE_ALIASES.items():
+        if alias in key:
+            return canon
+    return None
+
+
+def detect_document_type_from_ocr(ocr_lines: list[dict]) -> Optional[str]:
+    """Heuristically detect the document type from OCR text lines.
+
+    Looks for well-known keywords that appear on Aadhaar, Passport, and PAN
+    cards.  Returns a canonical type or None.
+    """
+    if not ocr_lines:
+        return None
+    # Combine all OCR text into one lowercase string for fast searching
+    combined = " ".join(line.get("text", "") for line in ocr_lines).lower()
+    # Aadhaar / UIDAI indicators
+    aadhaar_keywords = ["uidai", "unique identification", "aadhaar", "aadhar",
+                        "government of india", "vid", "virtual id"]
+    if any(kw in combined for kw in aadhaar_keywords):
+        # Avoid false-positive: make sure at least one Aadhaar-specific
+        # field label (like gender, dob, or a 12-digit number) is present
+        has_field = any(kw in combined for kw in ["gender", "sex", "dob",
+                                                  "date of birth"])
+        has_uid = any(kw in combined for kw in ["uidai", "unique identification"])
+        if has_uid or has_field:
+            return DOC_TYPE_AADHAAR
+    # Passport indicators
+    passport_keywords = ["passport", "republic of india",
+                         "ministry of external affairs"]
+    if any(kw in combined for kw in passport_keywords):
+        return DOC_TYPE_PASSPORT
+    # PAN indicators
+    pan_keywords = ["permanent account number", "income tax",
+                    "computing Board of India"]
+    if any(kw in combined for kw in pan_keywords):
+        return DOC_TYPE_PAN
+    return None
+
+
+# =============================================================================
 # Verification status constants
 # =============================================================================
 
@@ -416,7 +501,9 @@ def verify_document(
     Returns:
         dict with status, score, checks, reasons, fields_checked.
     """
-    doc_type = (document_type or fields.get("document_type") or "").lower()
+    doc_type = normalize_document_type(
+        document_type or fields.get("document_type")
+    ) or ""
 
     # Collect fields_checked for transparency
     fields_checked = []
@@ -432,9 +519,9 @@ def verify_document(
             "status": status,
         })
 
-    if doc_type == "aadhaar":
+    if doc_type == DOC_TYPE_AADHAAR:
         result = _verify_aadhaar(fields, ocr_data)
-    elif doc_type == "passport":
+    elif doc_type == DOC_TYPE_PASSPORT:
         result = _verify_passport(fields, ocr_data, mrz_data)
     else:
         # Generic fallback — basic field presence check
