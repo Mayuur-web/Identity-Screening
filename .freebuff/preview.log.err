@@ -1,0 +1,16 @@
+[2m12:45:00 pm[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/history?limit=100[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1201:49)
+    at afterConnectMultiple (node:net:1791:7)
+[2m12:45:00 pm[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/history?limit=100[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1201:49)
+    at afterConnectMultiple (node:net:1791:7)
+[2m1:05:38 pm[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/history?limit=100[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1201:49)
+    at afterConnectMultiple (node:net:1791:7)
+[2m1:05:38 pm[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/history?limit=100[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1201:49)
+    at afterConnectMultiple (node:net:1791:7)

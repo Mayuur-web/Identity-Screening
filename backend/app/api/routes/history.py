@@ -1,11 +1,14 @@
 """Verification history endpoints."""
 
 import json
+import logging
 from datetime import datetime, date
 
 from fastapi import APIRouter, HTTPException, Path
 
 from app.services.database_service import get_verification_history, delete_verification_record
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/history", tags=["history"])
 
@@ -44,6 +47,7 @@ async def verification_history(limit: int = 100):
         }
 
     except Exception as exc:
+        logger.error("History endpoint error: %s: %s", type(exc).__name__, exc, exc_info=True)
         # Return empty list instead of 500 — history is non-critical
         return {
             "success": True,

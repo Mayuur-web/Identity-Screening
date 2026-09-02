@@ -2,11 +2,14 @@
 
 import os
 import logging
+from pathlib import Path
 
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
-load_dotenv()
+# Load .env from the backend/ directory (same logic as config.py)
+_backend_dir = Path(__file__).resolve().parent.parent.parent
+load_dotenv(_backend_dir / ".env")
 
 logger = logging.getLogger(__name__)
 
@@ -110,6 +113,7 @@ def get_verification_history(limit: int = 50):
         return []
 
     try:
+        logger.info("Fetching verification history (limit=%d)...", limit)
         response = (
             supabase
             .table("verification_records")
@@ -119,6 +123,7 @@ def get_verification_history(limit: int = 50):
             .execute()
         )
 
+        logger.info("History query returned %d records", len(response.data) if response.data else 0)
         return response.data or []
 
     except Exception:

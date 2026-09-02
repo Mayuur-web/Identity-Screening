@@ -5,9 +5,10 @@ from pathlib import Path
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
-load_dotenv()
-
+# .env lives in the backend/ directory.  Compute the path
+# relative to this file so it works regardless of CWD.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+load_dotenv(BASE_DIR / ".env")
 UPLOAD_DIR = BASE_DIR / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -39,7 +40,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-me-in-production"
 
     class Config:
-        env_file = ".env"
+        env_file = str(BASE_DIR / ".env")
         env_file_encoding = "utf-8"
 
 
